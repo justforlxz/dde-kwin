@@ -303,7 +303,9 @@ QString DeepinWMFaker::GetWorkspaceBackgroundForMonitor(const int index,const QS
 {
     QUrl uri = getWorkspaceBackgroundForMonitor(index, strMonitorName);
     if (uri.isEmpty()) {
-        uri = _gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList().value(index - 1);
+        if(_gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList().count() >= WorkspaceCount()) {
+             uri = _gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList().value(index - 1);
+        }
         if (index == 1) {
             if(!QFileInfo(uri.path()).isFile()) {
                 uri = defaultFirstBackgroundUri;
