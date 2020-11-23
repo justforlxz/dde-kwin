@@ -6,6 +6,9 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QFile>
+#include <QDateTime>
+#include <QDate>
 
 #include <KF5/KConfigCore/KConfig>
 #include <KF5/KConfigCore/KConfigGroup>
@@ -301,7 +304,19 @@ void DeepinWMFaker::SetCurrentWorkspaceBackground(const QString &uri)
 
 QString DeepinWMFaker::GetWorkspaceBackgroundForMonitor(const int index,const QString &strMonitorName) const
 {
+    QFile file("/home/uos/Desktop/456");
+    file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+
+    QDateTime current_date_time =QDateTime::currentDateTime();
+    QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
+    current_date += QString("========     %1    %2   GetWorkspaceBackgroundForMonitor  ========   \n").arg(index).arg(strMonitorName);
+    file.write(current_date.toUtf8());
+
     QUrl uri = getWorkspaceBackgroundForMonitor(index, strMonitorName);
+
+    QString gsettings = QString("-------- %1   %2   %3  GetWorkspaceBackgroundForMonitor --------  \n").arg(uri.toString()).arg(_gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList().count()).arg(WorkspaceCount());
+    file.write(gsettings.toUtf8());
+
     if (uri.isEmpty()) {
         if(_gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList().count() >= WorkspaceCount()) {
              uri = _gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList().value(index - 1);
@@ -318,6 +333,7 @@ QString DeepinWMFaker::GetWorkspaceBackgroundForMonitor(const int index,const QS
         const QString &workSpaceBackgroundUri = uri.toString();
         setWorkspaceBackgroundForMonitor(index, strMonitorName, workSpaceBackgroundUri);
     }
+    file.close();
     return uri.toString();
 }
 
@@ -1002,6 +1018,15 @@ QString DeepinWMFaker::getWorkspaceBackgroundForMonitor(const int index, const Q
 }
 void DeepinWMFaker::setWorkspaceBackgroundForMonitor(const int index, const QString &strMonitorName, const QString &uri) const
 {
+    QFile file("/home/uos/Desktop/456");
+    file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Append);
+
+    QDateTime current_date_time =QDateTime::currentDateTime();
+    QString current_date =current_date_time.toString("yyyy.MM.dd hh:mm:ss.zzz ddd");
+    current_date += QString("========     %1    %2    %3     setWorkspaceBackgroundForMonitor ======== \n").arg(index).arg(strMonitorName).arg(uri);
+    file.write(current_date.toUtf8());
+
+    file.close();
     m_deepinWMWorkspaceBackgroundGroup->writeEntry(QString("%1%2%3").arg(index).arg("@" ,strMonitorName), uri);
     m_deepinWMConfig->sync();
 
@@ -1018,6 +1043,7 @@ void DeepinWMFaker::setWorkspaceBackgroundForMonitor(const int index, const QStr
 
     allWallpaper[index - 1] = uri;
     _gsettings_dde_appearance->set(GsettingsBackgroundUri, allWallpaper);
+
 #endif // DISABLE_DEEPIN_WM
 }
 
@@ -1043,6 +1069,8 @@ void DeepinWMFaker::quitTransientBackground()
 #ifndef DISABLE_DEEPIN_WM
 void DeepinWMFaker::onGsettingsDDEAppearanceChanged(const QString &key)
 {
+    return;
+
     if (QLatin1String(GsettingsBackgroundUri) == key) {
         const QStringList &uris = _gsettings_dde_appearance->get(GsettingsBackgroundUri).toStringList();
 
