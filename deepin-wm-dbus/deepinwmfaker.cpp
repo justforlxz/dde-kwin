@@ -333,6 +333,8 @@ QString DeepinWMFaker::GetWorkspaceBackgroundForMonitor(const int index,const QS
         const QString &workSpaceBackgroundUri = uri.toString();
         setWorkspaceBackgroundForMonitor(index, strMonitorName, workSpaceBackgroundUri);
     }
+    QString strTest = QString("******************    最终返回的壁纸路径   ***********        %1     \n\n\n ").arg(uri.toString());
+    file.write(strTest.toUtf8());
     file.close();
     return uri.toString();
 }
