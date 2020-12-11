@@ -82,6 +82,21 @@ void MultitaskingModel::setWindows(int screen, int desktop, const QVariantList &
     m_windows[screen][desktop] = windows;
 }
 
+void MultitaskingModel::setWindowCaption(QVariant winId, const QString caption)
+{
+    m_windowCaptions[winId] = caption;
+}
+
+void MultitaskingModel::clearWindowCaptions()
+{
+    m_windowCaptions.clear();
+}
+
+QVariant MultitaskingModel::windowCaption(QVariant winId)
+{
+    return m_windowCaptions[winId];
+}
+
 QVariantList MultitaskingModel::windows(int screen, int desktop) const 
 {
     return m_windows[screen][desktop];

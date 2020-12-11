@@ -30,115 +30,6 @@ Rectangle {
     signal qmlRequestGetBackground(int desktop, int monitor,int width,int height);
 
     Component {
-        id: windowThumbnailView;
-        Rectangle {
-            color: "red";
-            function resetWindowThumbnailModel()
-            {
-                windowThumbnailViewGrid.columns = multitaskingModel.getCalculateColumnsCount(screen,desktop);
-                windowThumbnailRepeater.model = multitaskingModel.windows(screen, desktop);
-                windowThumbnailRepeater.update();
-            } 
-            GridLayout {
-                id:windowThumbnailViewGrid
-                x: desktopThumbnailWidth/7 + closeBtnWidth/8 + 7;
-                y: desktopThumbnailHeight/10 + closeBtnHeight/8 + 7;
-                width: desktopThumbnailWidth*5/7 - closeBtnWidth/4 - 14;
-                height: desktopThumbnailHeight*8/10 - closeBtnHeight/4 - 14;
-
-                columns : multitaskingModel.getCalculateColumnsCount(screen,desktop);
-                Repeater {
-                    id: windowThumbnailRepeater
-                    model: multitaskingModel.windows(screen, desktop);
-                    PlasmaCore.WindowThumbnail {
-                        Layout.fillWidth: true;
-                        Layout.fillHeight: true;
-                        winId: modelData;
-
-                        //zhd add
-                        id:winAvatar
-                        property var draggingdata: winId
-                        property bool dropreceived : false
-
-                        property int dragingIndex:index
-                        Drag.keys: ["DraggingWindowAvatar"];  //for holdhand
-                        Drag.active:  avatarMousearea.drag.active
-                        Drag.hotSpot {
-                            x: width/2
-                            y: height/2
-                        }
-                        MouseArea { //zhd add   for drag window
-                            id:avatarMousearea
-                            anchors.fill:parent
-                            drag.target:winAvatar
-                            drag.smoothed :true
-                            property var pressedTime;
-                            property var releaseTime;
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: "Ma_winThumb_small_" +desktop+"_"+screen+"_"+ winId 
-                            Accessible.description: "small windowthumbnail_desktop_screen_winId"
-                            Accessible.onPressAction:pressed()
-
-                            onPressed: {
-                                winAvatar.Drag.hotSpot.x = mouse.x;
-                                winAvatar.Drag.hotSpot.y = mouse.y;
-                                pressedTime = Date.now(); 
-                            }
-                            onReleased: {
-                                releaseTime = Date.now();
-                                if ((releaseTime - pressedTime) < 200) {
-                                    multitaskingModel.setCurrentIndex(desktop - 1);
-                                }
-                            }
-                            drag.onActiveChanged: {
-                                if (!avatarMousearea.drag.active) {
-                                    console.log('------- release on ' + avatarMousearea.drag.target)
-                                    winAvatar.Drag.drop();
-                                }
-                            }
-                            states: State {
-                                when: avatarMousearea.drag.active;
-                                ParentChange {
-                                    target: winAvatar;
-                                    parent: root;
-                                }
-
-                                PropertyChanges {
-                                    target: winAvatar;
-                                    z: 100;
-
-                                }
-                                // AnchorChanges {
-                                //     target: winAvatar;
-                                //     anchors.horizontalCenter: undefined
-                                //     anchors.verticalCenter: undefined
-                                // }
-                            }
-                        }
-                        //zhd add end
-                    }
-                }
-                Connections {
-                    target: root
-                    onResetModel: {
-                        resetWindowThumbnailModel()
-                        //console.log(" model is changed !!!!!!!!!!")
-                    }
-                }
-                Connections {
-                    target: root
-                    onQmlForceResetDesktopModel: {
-                        resetWindowThumbnailModel()
-                        multitaskingModel.forceResetModel()
-                        //console.log(" model is changed !!!!!!!!!!")
-                    }
-                }
-            }
-        }
-    }
-
-    Component {
         id: desktopThumbnailView;
         Rectangle {
             Rectangle {
@@ -181,459 +72,7 @@ Rectangle {
                 Accessible.description: "background of whole desktopThumbnail area"
                 Accessible.onPressAction: pressed()
             }
-            ListView {
-                id: view
-                y:desktopThumbnailItemHeight/8;
-                width: 0;
-                height: parent.height;
-                orientation: ListView.Horizontal;
-                model: multitaskingModel
-                interactive : false;
-                clip: true;
 
-                delegate: Rectangle {
-
-                    id: thumbDelegate;
-                    width: desktopThumbnailItemWidth;
-                    height: desktopThumbnailItemHeight;
-                    color: "transparent"
-
-                    property bool isDesktopHightlighted: index === multitaskingModel.currentDeskIndex
-
-                    Rectangle {
-                        id: desktopThumbnail;
-                        property int desktop: smalldesktopThumbnail.desktop;
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        property var originParent: view
-                        color: "transparent"
-
-                        radius: 10
-                        width: thumbDelegate.width
-                        height: thumbDelegate.height
-
-                        DesktopThumbnail {
-                            id : smalldesktopThumbnail
-                            desktop: index + 1;
-                            width: parent.width - closeBtn.width*(3/4)
-                            height: parent.height - closeBtn.height*(3/4)
-                            anchors.centerIn: parent
-                            radius: 10
-                            monitor: screenname
-
-                            Rectangle {
-                                id:winThumrect;
-                                width: parent.width;
-                                height: parent.height;
-                                border.color: "lightskyblue";
-                                border.width: 0;
-                                color: "transparent";
-                                radius: 10;
-                            }
-                            Component.onCompleted: {
-                                smalldesktopThumbnail.getDesktopThumbnailBackground(desktop,monitor,width,height);
-                            }
-                            Connections {
-                                target: root
-                                onQmlUpdateDesktopThumBackground: {
-                                    smalldesktopThumbnail.getDesktopThumbnailBackground(smalldesktopThumbnail.desktop,smalldesktopThumbnail.monitor,smalldesktopThumbnail.width,smalldesktopThumbnail.height);
-                                }
-                            }
-                        }
-
-
-                        Rectangle {
-                            id: closeBtn;
-                            x: thumbDelegate.width - closeBtn.width
-                            y: 0
-                            z: 100
-                            width: closeBtnIcon.width
-                            height: closeBtnIcon.height
-                            color: "transparent";
-
-                            property int desktop: desktopThumbnail.desktop;
-                            visible: false;
-
-                            Image {
-                                id: closeBtnIcon;
-                                source: "qrc:///icons/data/close_normal.svg"
-                            }
-
-
-                            Connections {
-                                target: view;
-                                onCountChanged: {
-                                    closeBtn.visible = false;
-                                }
-                            }
-                            MouseArea {
-                                anchors.fill: parent;
-                                onClicked: {
-                                    multitaskingModel.remove(index);
-                                }
-                                Accessible.role: Accessible.Button
-                                Accessible.name: "Ma_deskThumb_closeBtn_"+(index+1)+"_"+currentScreen
-                                Accessible.description: "desktopThumbnail_closeButton_desktop_screen"
-                                Accessible.onPressAction: pressed()
-                            }
-                        }
-
-
-
-                        MouseArea {
-                            id: desktopThumbMouseArea
-                            anchors.fill: parent;
-                            hoverEnabled: true;
-
-                            Accessible.role: Accessible.Button
-                            Accessible.name: "Ma_deskThumb_"+(index+1)+"_"+currentScreen
-                            Accessible.description: "desktopThumbnail_desktop_screen"
-                            Accessible.onPressAction: pressed()
-
-                            onClicked: {
-                                multitaskingModel.setCurrentIndex(index);
-                            }
-
-                            drag.target: desktopThumbnail;
-                            onReleased: {
-                                if (manager.desktopCount == 1) {
-                                    return
-                                }
-                            }
-                            onPressed: {
-                                desktopThumbnail.Drag.hotSpot.x = mouse.x;
-                                desktopThumbnail.Drag.hotSpot.y = mouse.y;
-                            }
-                            drag.onActiveChanged: {
-                                if (!desktopThumbMouseArea.drag.active) {
-                                    log('------- release ws on ' + thumbDelegate.Drag.target)
-                                    desktopThumbnail.Drag.drop();
-                                }
-                            }
-
-                            onEntered: {
-                                if (multitaskingModel.rowCount() !== 1) {
-                                    closeBtn.visible = true;
-                                }
-                            }
-
-                            onExited: {
-                                closeBtn.visible = false;
-                            }
-                        }
-                        property bool pendingDragRemove: false
-                        Drag.keys: ["workspaceThumb"];
-                        Drag.active: view.count > 1 && desktopThumbMouseArea.drag.active
-                        Drag.hotSpot {
-                            x: width/2
-                            y: height/2
-                        }
-
-                        states: [State {
-                                when: desktopThumbnail.Drag.active;
-                                ParentChange {
-                                    target: desktopThumbnail;
-                                    parent: root;
-                                }
-
-                                PropertyChanges {
-                                    target: desktopThumbnail;
-                                    z: 100;
-                                }
-                                AnchorChanges {
-                                    target: desktopThumbnail;
-                                    anchors.horizontalCenter: undefined
-                                    anchors.verticalCenter: undefined
-                                }
-                            },
-                            State {
-                                name: "isDesktopHightlighted"
-                                when: isDesktopHightlighted
-                                PropertyChanges {
-                                    target: winThumrect
-                                    border.width: 3;
-                                }
-                            }]
-
-
-
-                        //window thumbnail
-                        Loader {
-                            id: winThumLoader
-                            sourceComponent: windowThumbnailView
-                            property int thumbnailWidth: 50;
-                            property int thumbnailHeight: 50;
-                            property int screen: currentScreen;
-                            property int desktopThumbnailWidth:desktopThumbnail.width
-                            property int desktopThumbnailHeight:desktopThumbnail.height
-                            property int desktop: desktopThumbnail.desktop;
-
-                            property int closeBtnWidth:closeBtn.width
-                            property int closeBtnHeight:closeBtn.height
-                        }
-
-//                        Rectangle {
-//                            id: closeBtn;
-////                            anchors.right: parent.right;
-//                            x: parent.width - (parent.width - parent.width*0.85)/2 - closeBtnIcon.width/2
-//                            y: (parent.height - parent.height*0.85)/2 - closeBtnIcon.height/2
-//                            color: "transparent";
-//                            property int desktop: desktopThumbnail.desktop;
-//                            visible: false;
-
-//                            Image {
-//                                id: closeBtnIcon;
-//                                source: "qrc:///icons/data/close_normal.svg"
-//                            }
-
-//                            MouseArea {
-//                                anchors.fill: closeBtn;
-//                                onClicked: {
-//                                    multitaskingModel.remove(index);
-//                                }
-//                            }
-
-//                            Connections {
-//                                target: view;
-//                                onCountChanged: {
-//                                    closeBtn.visible = false;
-//                                }
-//                            }
-//                        }
-
-//                        Rectangle {
-//                            id:winThumrect;
-//                            width: parent.width;
-//                            height: parent.height;
-//                            border.color: "lightskyblue";
-//                            border.width: 0;
-//                            color: "transparent";
-//                            radius: 10;
-//                        }
-                    }
-
-                    DropArea {
-                        id: workspaceThumbDrop
-                        anchors.fill: parent;
-                        anchors.topMargin: -workspaceThumbDrop.parent.parent.parent.y
-                        property int designated: index + 1;
-                        property var originParent: view
-
-                        z: 1
-                        keys: ['workspaceThumb','DraggingWindowAvatar','DragwindowThumbnailitemdata']  //  zhd change for drop a window
-
-
-                        onDropped: {
-                            /* NOTE:
-                            * during dropping, PropertyChanges is still in effect, which means
-                            * drop.source.parent should not be Loader
-                            * and drop.source.z == 100
-                            */
-                            log("----------- workspaceThumb onDrop")
-
-                            if (drop.keys[0] === 'workspaceThumb') {
-                                var from = drop.source.desktop
-                                var to = workspaceThumbDrop.designated
-                                if (workspaceThumbDrop.designated === drop.source.desktop && drop.source.pendingDragRemove) {
-                                        //FIXME: could be a delete operation but need more calculation
-                                        log("----------- workspaceThumbDrop: close desktop " + from)
-                                        multitaskingModel.remove(index);
-                                } else {
-                                    if (from === to) {
-                                        return;
-                                    }
-                                    if (drop.source.originParent !== originParent) {
-                                        return;
-                                    }
-                                    log("from:"+from + " to:"+to)
-                                    multitaskingModel.move(from-1, to-1);
-                                }
-                            }
-                            if (drop.keys[0] === "DraggingWindowAvatar" || drop.keys[0] === "DragwindowThumbnailitemdata") {  //zhd add
-
-                                log("DraggingWindowAvatar :Droppsource   " +drag.source.draggingdata +"desktop index:" + desktopThumbnail.desktop + "current screen: "+ currentScreen);
-                                qmlRequestMove2Desktop(currentScreen,desktopThumbnail.desktop,drag.source.draggingdata);
-                                setGridviewData();
-                                drag.source.dropreceived=true
-                            }
-                        }
-
-                        onEntered: {
-                            if (drag.keys[0] === 'workspaceThumb') {
-                             
-                            }
-                            //console.log('------[workspaceThumbDrop]: Enter ' + workspaceThumbDrop.designated + ' from ' + drag.source + ', keys: ' + drag.keys + ', accept: ' + drag.accepted)
-                        }
-
-                        onExited: {
-                            //console.log("----------- workspaceThumb onExited")
-                            if (drag.source.pendingDragRemove) {
-                                hint.visible = false
-                                drag.source.pendingDragRemove = hint.visible
-                            }
-
-                        }
-
-                        onPositionChanged: {
-                            if (drag.keys[0] === 'workspaceThumb') {
-                                var diff = workspaceThumbDrop.parent.y - drag.source.y
-                       //         log('------ ' + workspaceThumbDrop.parent.y + ',' + drag.source.y + ', ' + diff + ', ' + drag.source.height/2)
-                                if (diff > 0 && diff > drag.source.height/3) {
-                                    hint.visible = true
-                                } else {
-                                    hint.visible = false
-                                }
-                                drag.source.pendingDragRemove = hint.visible
-                            }
-                        }
-
-                        Rectangle {
-                            id: hint
-                            visible: false
-                            anchors.fill: parent
-                            color: "transparent"
-
-                            Text {
-                                text: qsTr("Drag upwards to remove")
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                y: parent.height * 0.572
-
-                                font.family: "Helvetica"
-                                font.pointSize: 14
-                                color: Qt.rgba(1, 1, 1, 0.5)
-                            }
-
-                            Canvas {
-                                anchors.fill: parent
-                                onPaint: {
-                                    var ctx = getContext("2d");
-                                    ctx.lineWidth = 0.5;
-                                    ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
-
-                                    var POSITION_PERCENT = 0.449;
-                                    var LINE_START = 0.060;
-
-                                    ctx.beginPath();
-                                    ctx.moveTo(width * LINE_START, height * POSITION_PERCENT);
-                                    ctx.lineTo(width * (1.0 - 2.0 * LINE_START), height * POSITION_PERCENT);
-                                    ctx.stroke();
-                                }
-                            }
-                        }
-                    }
-//                }
-                }
-                //center
-                onCountChanged: {
-                    view.width = desktopThumbnailItemWidth * count+view.spacing * (count-1);
-                    view.x = (parent.width - view.width) / 2;
-                    plus.visible = count < 4;
-                    setGridviewData();
-                    bigWindowThrumbContainer.curdesktop=multitaskingModel.currentIndex()+1 //zhd add
-                }
-
-
-                Connections {
-                    target: multitaskingModel;
-                    onCurrentIndexChanged: {
-                        setGridviewData();
-                        bigWindowThrumbContainer.curdesktop=multitaskingModel.currentIndex()+1 //zhd add
-                    }
-                }
-            }
-
-            Rectangle {
-                id: plus
-                enabled: visible
-                color: "#33ffffff"
-
-                x: screenWidth - 2*plus.width;
-                y: desktopThumbnailItemHeight/8 + desktopThumbnailItemHeight/2 - plus.height/2;
-
-                width: (screenWidth - (desktopThumbnailItemWidth*3 + view.spacing*2))/8;
-                height: plus.width;
-                radius: width > 120 ? 30: 15
-
-                Image {
-                    z: 1
-                    id: background
-                    //source: backgroundManager.defaultNewDesktopURI
-                    anchors.fill: parent
-                    visible: false //disable now
-
-                    opacity: 0.0
-                    Behavior on opacity {
-                        PropertyAnimation { duration: 200; easing.type: Easing.InOutCubic }
-                    }
-
-                    layer.enabled: true
-                    layer.effect: OpacityMask {
-                        maskSource: Rectangle {
-                            x: background.x
-                            y: background.y
-                            width: background.width
-                            height: background.height
-                            radius: 6
-                        }
-                    }
-                }
-
-                Canvas {
-                    z: 2
-                    anchors.fill: parent
-                    onPaint: {
-                        var ctx = getContext("2d");
-                        var plus_size = 20.0
-                        ctx.lineWidth = 2
-                        ctx.strokeStyle = "rgba(255, 255, 255, 1.0)";
-
-                        ctx.beginPath();
-                        ctx.moveTo((width - plus_size)/2, height/2);
-                        ctx.lineTo((width + plus_size)/2, height/2);
-
-                        ctx.moveTo(width/2, (height - plus_size)/2);
-                        ctx.lineTo(width/2, (height + plus_size)/2);
-                        ctx.stroke();
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    //hoverEnabled: true
-
-                    Accessible.role: Accessible.Button
-                    Accessible.name: "Ma_plusBtn"
-                    Accessible.description: "plus Button"
-                    Accessible.onPressAction: pressed()
-
-                    onClicked: {
-                        multitaskingModel.append();
-                        multitaskingModel.setCurrentIndex(multitaskingModel.rowCount() - 1);
-                    }
-                    onEntered: {
-                        //backgroundManager.shuffleDefaultBackgroundURI()
-                        background.opacity = 0.6
-                    }
-
-                    onExited: {
-                        background.opacity = 0.0
-                    }
-                }
-            } //~ plus button
-            DropArea {
-                anchors.right:wholeDesktopThumbnailView.right;
-                width: screenWidth-view.x-view.width;
-                height: view.height;
-                onEntered: console.log("entered")
-                keys:['PlusButton']
-                onDropped: {
-                    var winId = drag.source.winId;
-                    multitaskingModel.append();
-                    var currentDesktop = multitaskingModel.rowCount();
-                    qmlRequestMove2Desktop(currentScreen, currentDesktop, winId);
-                    multitaskingModel.setCurrentIndex(currentDesktop - 1);
-                }
-            }
             //window thumbnail
 
             function setGridviewData() {
@@ -667,9 +106,9 @@ Rectangle {
             Rectangle{
                 id: bigWindowThrumbContainer
                 x: 0
-                y: view.y + view.height;
+                y: 0;//view.y + view.height;
                 width: screenWidth  //  other area except grid  can receove
-                height: screenHeight - view.height - 35;
+                height: screenHeight - 35;//screenHeight - view.height - 35;
                 color:"transparent"
 
                 property int curdesktop:1
@@ -723,7 +162,7 @@ Rectangle {
                 GridLayout {
                     id:grid
                     width: screenWidth*5/7;
-                    height: screenHeight - view.height-35;
+                    height: screenHeight - 35;//screenHeight - view.height-35;
                     anchors.centerIn: parent;
                     columns : multitaskingModel.getCalculateColumnsCount(currentScreen,multitaskingModel.currentIndex()+1);
                     Repeater {
@@ -763,7 +202,6 @@ Rectangle {
                                     border.width: 0;
                                     color: "transparent";
                                 }
-
                             }
 
 //                            Rectangle {
@@ -1032,8 +470,8 @@ Rectangle {
                             Rectangle {
                                 id: clientIcon;
 //                                color: "red"
-                                x:(plasmaCoreWindowThumbnail.width/2 -  clientIconImage.width/2)/0.85;
-                                y: (parent.height - clientIconImage.height/2) - ( parent.height - plasmaCoreWindowThumbnail.height )/2
+                                x:(plasmaCoreWindowThumbnail.width)*0.05;
+                                y:(parent.height - plasmaCoreWindowThumbnail.height/0.85 - clientIcon.height/1.6);
                                 width: clientIconImage.width;
                                 height: clientIconImage.height;
                                 color: "transparent";
@@ -1041,6 +479,23 @@ Rectangle {
                                     id: clientIconImage;
                                     source: "image://imageProvider/" + modelData ;
                                     cache : false
+                                }
+                            }
+                            //caption
+                            Rectangle {
+                                id: clientCaption;
+                                x:(plasmaCoreWindowThumbnail.width)*0.05 + clientIconImage.width;
+                                y:(parent.height - plasmaCoreWindowThumbnail.height/0.85 - clientIcon.height/2);
+                                width: 200;
+                                height: clientIconImage.height;
+                                color: "transparent";
+                                Text {
+                                    width: 200
+                                    font.pointSize: 16
+                                    font.bold: true
+                                    elide: Text.ElideLeft
+                                    color: "white"
+                                    text: multitaskingModel.windowCaption(winId)
                                 }
                             }
                         } //this
@@ -1052,10 +507,14 @@ Rectangle {
                         bigWindowThrumbContainer.curdesktop=multitaskingModel.currentIndex()+1
                     }
                 }
+                Component.onCompleted: {
+                    setGridviewData();
+                }
                 }
             }
         }
     }
+
     Component.onCompleted: {
         var numScreens = 1;
         if (multitaskingModel.isExtensionMode) {

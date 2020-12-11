@@ -69,6 +69,9 @@ public:
     Q_INVOKABLE void addWindow(int screen, int desktop, const QVariant &winId);
     Q_INVOKABLE void removeWindow(int screen, int desktop, const QVariant &winId);
     Q_INVOKABLE void setWindows(int screen, int desktop, const QVariantList &windows);
+    Q_INVOKABLE void setWindowCaption(QVariant winId, const QString caption);
+    Q_INVOKABLE void clearWindowCaptions();
+    Q_INVOKABLE QVariant windowCaption(QVariant winId);
     Q_INVOKABLE QVariantList windows(int screen, int desktop) const; 
     Q_INVOKABLE bool isCurrentScreenWindows(int screen, int desktop, QVariant wid);
     Q_INVOKABLE void moveToScreen(int screen, int desktop, QVariant wid);
@@ -135,6 +138,7 @@ private:
     //QMap<screen, QMap<desktop, window>;
     // screen begin from 0. desktop begin from 1;
     QMap<int, QMap<int, QVariantList> > m_windows;
+    QMap<QVariant,QString> m_windowCaptions;
     int m_currentIndex; // is Current Desktop Id - 1
     int m_nCurrentSelectIndex; // is Current Window Id
 };

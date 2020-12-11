@@ -493,12 +493,14 @@ QVariantList MultitaskingEffect::windowsFor(int screen, int desktop)
             auto wid = findWId(ew);
             assert (effects->findWindow(wid) == ew);
             vl.append(wid);
+            m_multitaskingModel->setWindowCaption(wid,ew->caption());
         }
         if (isRelevantWithPresentWindows(ew) && ew->desktop() == desktop) {
             if (effects->screenNumber(ew->pos()) == screen) {
                 auto wid = findWId(ew);
                 assert (effects->findWindow(wid) == ew);
                 vl.append(wid);
+                m_multitaskingModel->setWindowCaption(wid,ew->caption());
             }
         }
     }
@@ -1284,6 +1286,7 @@ void MultitaskingEffect::setActive(bool active)
             m_targetDesktop = effects->currentDesktop();
         }
         const int desktopCount = effects->numberOfDesktops();
+        m_multitaskingModel->clearWindowCaptions();
         for (int d = 1; d <= desktopCount; ++d) {
             for (int screen = 0; screen < effects->numScreens(); ++screen) {
                 auto windows = windowsFor(screen, d);
