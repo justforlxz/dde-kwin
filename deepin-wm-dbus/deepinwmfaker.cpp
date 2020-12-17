@@ -810,9 +810,6 @@ void DeepinWMFaker::ShowWindow()
 
 void DeepinWMFaker::ShowWorkspace()
 {
-    if (maybeShowWarningDialog())
-        return;
-
     m_kwinUtilsInter->ShowWorkspacesView();
 }
 
