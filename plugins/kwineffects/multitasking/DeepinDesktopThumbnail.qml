@@ -45,14 +45,6 @@ Rectangle {
                 anchors.fill: item
             }
         }
-
-        Connections {
-            target: view;
-
-            onCountChanged: {
-                //在model长度发生变化时调整布局(调整每一个窗口的大小)
-            }
-        }
     }
 }
 

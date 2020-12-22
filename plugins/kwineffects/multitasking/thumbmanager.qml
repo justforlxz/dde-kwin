@@ -17,38 +17,10 @@ Rectangle {
     //sent signal to c++
     signal qmlRequestCloseWindow(var window)
 
-    Component {
-        id: desktopThumbnailView;
-        GridView  {
-            id: windowThumbnail
-            layoutDirection : Qt.RightToLeft
-            flow: GridView.FlowTopToBottom
-            model: multitaskingModel
-            cellHeight: 1920 / 3
-            cellWidth: 1080 / 2
-
-            delegate: Item {
-                id: item
-                width: 200 //parent.width/3;
-                height: 200 //parent.height/2
-
-                DeepinWindowThumbnail {
-                    winId: ThumbnailRole
-                    winTitle: "hello"
-                    //winIcon:
-                    anchors.fill: item
-                }
-            }
-        }
-    }
-
-    Loader {
-        id: view
-        sourceComponent: desktopThumbnailView
-        x: root.x
-        y: root.y
-        width: root.width
-        height: root.height
+    DeepinDesktopThumbnail {
+        width: 800
+        height: 600
+        model: multitaskingModel
     }
 }
 
