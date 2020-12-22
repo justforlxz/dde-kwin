@@ -282,8 +282,6 @@ MultitaskingEffect::MultitaskingEffect()
     connect(effects, &EffectsHandler::numberScreensChanged, this, &MultitaskingEffect::onNumberScreensChanged);
     connect(effects, &EffectsHandler::virtualScreenGeometryChanged, this, &MultitaskingEffect::onScreenSizeChanged);
     connect(effects, &EffectsHandler::propertyNotify, this, &MultitaskingEffect::onPropertyNotify);
-    connect( m_multitaskingModel,SIGNAL(countChanged(int)),this,SLOT( onNumberDesktopsChanged(int) ) );
-    connect( m_multitaskingModel,SIGNAL( windowSelectedSignal(QVariant) ),this,SLOT( windowSelectSlot(QVariant) ) );
 
     BackgroundManager::instance().updateDesktopCount(effects->numberOfDesktops());
 
@@ -408,14 +406,7 @@ void MultitaskingEffect::onWindowClosed(KWin::EffectWindow* w)
         return;
 
     refreshWindows();
-    m_multitaskingModel->setCurrentSelectIndex(-1);
-    if(m_multitaskingModel->isCurrentScreensEmpty()) 
-    {
-        m_multitaskingModel->setCurrentSelectIndex(-1);
-    }
-
     emit modeChanged();
-
 }
 
 void MultitaskingEffect::onWindowDeleted(KWin::EffectWindow* w)
@@ -493,14 +484,12 @@ QVariantList MultitaskingEffect::windowsFor(int screen, int desktop)
             auto wid = findWId(ew);
             assert (effects->findWindow(wid) == ew);
             vl.append(wid);
-            m_multitaskingModel->setWindowCaption(wid,ew->caption());
         }
         if (isRelevantWithPresentWindows(ew) && ew->desktop() == desktop) {
             if (effects->screenNumber(ew->pos()) == screen) {
                 auto wid = findWId(ew);
                 assert (effects->findWindow(wid) == ew);
                 vl.append(wid);
-                m_multitaskingModel->setWindowCaption(wid,ew->caption());
             }
         }
     }
@@ -660,7 +649,6 @@ bool MultitaskingEffect::isRelevantWithPresentWindows(EffectWindow *w) const
 // User interaction
 void MultitaskingEffect::windowInputMouseEvent(QEvent *e)
 {
-    static bool s_insideThumbManager = false;
     auto me = static_cast<QMouseEvent*>(e);
 
     qApp->sendEvent(m_multitaskingView, e);
@@ -685,21 +673,9 @@ void MultitaskingEffect::updateWindowStates(QMouseEvent* me)
         if (me->type() != QEvent::MouseButtonPress || is_smooth_scrolling) return;
         if (me->buttons() == Qt::ForwardButton) {
             is_smooth_scrolling = true;
-            if (m_multitaskingModel->currentIndex()+1 < m_multitaskingModel->rowCount()) {
-                m_multitaskingModel->setCurrentIndex(m_multitaskingModel->currentIndex()+1);
-            } else {
-                m_multitaskingModel->setCurrentIndex(0);
-            }
+
         } else if (me->buttons() == Qt::BackButton) {
             is_smooth_scrolling = true;
-            if (m_multitaskingModel->currentIndex()-1 >= 0) {
-                m_multitaskingModel->setCurrentIndex(m_multitaskingModel->currentIndex()-1);
-            } else {
-                int count = m_multitaskingModel->rowCount();
-                if (count > 0) {
-                    m_multitaskingModel->setCurrentIndex(count - 1);
-                }
-            }
         }
         QTimer::singleShot(400, [&]() { is_smooth_scrolling = false; });
         return;
@@ -785,54 +761,34 @@ void MultitaskingEffect::grabbedKeyboardEvent(QKeyEvent *e)
 
             case Qt::Key_Enter:
             case Qt::Key_Return:
-                windowSelectSlot(m_multitaskingModel->currentSelectIndex());
                 break;
 
             case Qt::Key_Right:  // include super+->
                 if (e->modifiers() == Qt::MetaModifier) {
-                    if (m_multitaskingModel->currentIndex()+1 < m_multitaskingModel->rowCount()) {
-                        m_multitaskingModel->setCurrentIndex(m_multitaskingModel->currentIndex()+1);
-                    } else {
-                        m_multitaskingModel->setCurrentIndex(0);
-                    }
                 } else if (e->modifiers() == Qt::NoModifier) {
-                    selectNextWindow();
                 }
                 break;
 
             case Qt::Key_Left:
                 if (e->modifiers() == Qt::MetaModifier) {
-                    if (m_multitaskingModel->currentIndex()-1 >= 0) {
-                        m_multitaskingModel->setCurrentIndex(m_multitaskingModel->currentIndex()-1);
-                    } else {
-                        int count = m_multitaskingModel->rowCount();
-                        if (count > 0) {
-                            m_multitaskingModel->setCurrentIndex(count - 1);
-                        }
-                    }
                 } else if (e->modifiers() == Qt::NoModifier) {
-                    selectPrevWindow();
                 }
                 break;
 
             case Qt::Key_Down:
                 if (e->modifiers() == Qt::NoModifier) {
-                    selectNextWindowVert(1);
                 }
                 break;
             case Qt::Key_Up:
                 if (e->modifiers() == Qt::NoModifier) {
-                    selectNextWindowVert(-1);
                 }
                 break;
             case Qt::Key_Home:
                 if (e->modifiers() == Qt::NoModifier) {
-                    selectFirstWindow();
                 }
                 break;
             case Qt::Key_End:
                 if (e->modifiers() == Qt::NoModifier) {
-                    selectLastWindow();
                 }
                 break;
 
@@ -843,10 +799,6 @@ void MultitaskingEffect::grabbedKeyboardEvent(QKeyEvent *e)
                 if (e->modifiers() == Qt::NoModifier || 
                         e->modifiers() == Qt::MetaModifier || 
                         e->modifiers() == (Qt::MetaModifier|Qt::KeypadModifier)) {
-                    int index = e->key() - Qt::Key_1;
-                    if (m_multitaskingModel->rowCount() > index) {
-                       m_multitaskingModel->setCurrentIndex(index);
-                    }
                 }
                 break;
 
@@ -854,65 +806,25 @@ void MultitaskingEffect::grabbedKeyboardEvent(QKeyEvent *e)
             case Qt::Key_At: // shift+2
             case Qt::Key_NumberSign: // shift+3
             case Qt::Key_Dollar: // shift+4
-                if (e->modifiers() == (Qt::ShiftModifier | Qt::MetaModifier)) {
-                    int target_desktop = 1;
-                    switch(e->key()) {
-                        case Qt::Key_Exclam:  target_desktop = 1; break;
-                        case Qt::Key_At:  target_desktop = 2; break;
-                        case Qt::Key_NumberSign:  target_desktop = 3; break;
-                        case Qt::Key_Dollar:  target_desktop = 4; break;
-                        default: break;
-                    }
-                    m_multitaskingModel->setCurrentIndex(target_desktop-1);
-                    qCDebug(BLUR_CAT) << "----------- super+shift+"<<target_desktop;
-
-                    if( m_multitaskingModel->currentSelectIndex() == 0 )
-                    {
-                        if( !m_pEffectWindow->isDesktop() )
-                        {
-                            auto winId = findWId(m_pEffectWindow);
-                            m_multitaskingModel->setCurrentSelectIndex( (int)winId );
-                        }
-                    }
-                    QVariant  winId  = m_multitaskingModel->currentSelectIndex();
-                    EffectWindow *ew = effects->findWindow(winId.toULongLong());
-                    if(ew)
-                    {
-                        moveWindow2Desktop( ew->screen(),target_desktop ,m_multitaskingModel->currentSelectIndex());
-                    }
-                }
                 break;
 
             case Qt::Key_Equal:
                 if (e->modifiers() == Qt::AltModifier) {
-                    m_multitaskingModel->append();
-                    m_multitaskingModel->setCurrentIndex(m_multitaskingModel->count() - 1);
                 }
                 break;
 
             case Qt::Key_Plus:
                 if (e->modifiers() == (Qt::AltModifier|Qt::KeypadModifier)) {
-                    m_multitaskingModel->append();
-                    m_multitaskingModel->setCurrentIndex(m_multitaskingModel->count() - 1);
                 }
                 break;
 
             case Qt::Key_Minus:
                 if (e->modifiers() == Qt::AltModifier || e->modifiers() == (Qt::AltModifier|Qt::KeypadModifier)) {
-                    m_multitaskingModel->remove(m_targetDesktop - 1);
-                    m_multitaskingModel->setCurrentIndex(m_targetDesktop - 1);
                 }
                 break;
 
             case Qt::Key_Delete:
                 if (e->modifiers() == Qt::NoModifier) {
-                    QVariant wId = m_multitaskingModel->currentSelectIndex();
-                    EffectWindow* ew = effects->findWindow(wId.toULongLong());
-                    if (ew) {
-                        qCDebug(BLUR_CAT) << "-------- screen: " << ew->screen() << " desktop: " << ew->desktop()
-                                          << ", close selected window: " << wId.toULongLong();
-                        removeEffectWindow(ew->screen(), ew->desktop(), wId);
-                    }
                 }
                 break;
 
@@ -930,13 +842,11 @@ void MultitaskingEffect::grabbedKeyboardEvent(QKeyEvent *e)
 
             case Qt::Key_QuoteLeft:
                 if (e->modifiers() == Qt::AltModifier) {
-                    m_multitaskingModel->selectNextSametypeWindow();
                 }
                 break;
 
             case Qt::Key_AsciiTilde:
                 if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
-                    m_multitaskingModel->selectPrevSametypeWindow();
                 }
                 break;
 
@@ -995,27 +905,22 @@ void MultitaskingEffect::selectPrevGroupWindow()
 
 void MultitaskingEffect::selectPrevWindow()
 {
-    m_multitaskingModel->selectPrevWindow();
 }
 
 void MultitaskingEffect::selectNextWindow()
 {
-    m_multitaskingModel->selectNextWindow();
 }
 
 void MultitaskingEffect::selectFirstWindow()
 {
-    m_multitaskingModel->selectFirstWindow();
 }
 
 void MultitaskingEffect::selectLastWindow()
 {
-    m_multitaskingModel->selectLastWindow();
 }
 
 void MultitaskingEffect::selectNextWindowVert(int dir)
 {
-    m_multitaskingModel->selectNextWindowVert(dir);
 }
 
 
@@ -1209,7 +1114,6 @@ void MultitaskingEffect::moveEffectWindow2Desktop(EffectWindow* ew, int desktop)
 
     refreshWindows();
     emit modeChanged();
-    m_multitaskingModel->updateWindowDestop(desktop);
 }
 
 void MultitaskingEffect::changeCurrentDesktop(int d)
@@ -1264,16 +1168,6 @@ void MultitaskingEffect::setActive(bool active)
 {
     if (!m_thumbManager) {
         m_thumbManager = new DesktopThumbnailManager(effects);
-        connect(m_thumbManager, &DesktopThumbnailManager::requestAppendDesktop,
-                this, &MultitaskingEffect::appendDesktop);
-        connect(m_thumbManager, &DesktopThumbnailManager::requestDeleteDesktop,
-                this, &MultitaskingEffect::removeDesktop);
-        connect(m_thumbManager, &DesktopThumbnailManager::requestChangeCurrentDesktop,
-                this, &MultitaskingEffect::changeCurrentDesktop);
-        connect(m_thumbManager, &DesktopThumbnailManager::requestMove2Desktop,
-                this, &MultitaskingEffect::moveWindow2Desktop);
-        connect(m_thumbManager, &DesktopThumbnailManager::requestSwitchDesktop,
-                this, &MultitaskingEffect::switchTwoDesktop);
     }
 
     m_multitaskingViewVisible = active;
@@ -1286,11 +1180,10 @@ void MultitaskingEffect::setActive(bool active)
             m_targetDesktop = effects->currentDesktop();
         }
         const int desktopCount = effects->numberOfDesktops();
-        m_multitaskingModel->clearWindowCaptions();
         for (int d = 1; d <= desktopCount; ++d) {
             for (int screen = 0; screen < effects->numScreens(); ++screen) {
-                auto windows = windowsFor(screen, d);
-                m_multitaskingModel->setWindows(screen, d, windows);
+                QVariantList windows = windowsFor(screen, d);
+                m_multitaskingModel->setWindows(windows);
             }
         }
 
@@ -1310,11 +1203,6 @@ void MultitaskingEffect::setActive(bool active)
             m_multitaskingView->rootContext()->setContextProperty("multitaskingModel", m_multitaskingModel);
             m_multitaskingView->rootContext()->setContextProperty("numScreens", effects->numScreens());
             m_multitaskingView->setWindowFlags(Qt::BypassWindowManagerHint);
-            connect(m_multitaskingModel, SIGNAL(appendDesktop()), m_thumbManager, SIGNAL(requestAppendDesktop()));
-            connect(m_multitaskingModel, SIGNAL(removeDesktop(int)), m_thumbManager, SIGNAL(requestDeleteDesktop(int)));
-            connect(m_multitaskingModel, SIGNAL(currentDesktopChanged(int)), m_thumbManager, SIGNAL(requestChangeCurrentDesktop(int)));
-            connect(m_multitaskingModel, SIGNAL(refreshWindows()), this, SLOT(refreshWindows()));
-            connect(m_multitaskingModel, SIGNAL(switchDesktop(int, int)), this, SLOT(switchTwoDesktop(int, int)));
         }
 
         QList<QScreen *> screenList = QGuiApplication::screens();
@@ -1328,32 +1216,14 @@ void MultitaskingEffect::setActive(bool active)
         }
         BackgroundManager::instance().setMonitorInfo(screenInfoLst);
 
-        m_multitaskingModel->setCurrentIndex(effects->currentDesktop() - 1);
         m_thumbManager->setGeometry(effects->virtualScreenGeometry());
         m_multitaskingView->setSource(QUrl("qrc:/qml/thumbmanager.qml"));
         m_multitaskingView->setGeometry(effects->virtualScreenGeometry());
-        m_multitaskingModel->load(desktopCount);
         m_hasKeyboardGrab = effects->grabKeyboard(this);
         effects->startMouseInterception(this, Qt::PointingHandCursor);
 
         auto root = m_multitaskingView->rootObject();
         root->setAcceptHoverEvents(true);
-        connect(root, SIGNAL(qmlRequestMove2Desktop(int, int, QVariant)), 
-                m_thumbManager, SIGNAL(requestMove2Desktop(int, int, QVariant)));
-        connect(root, SIGNAL(qmlCloseMultitask()), this, SLOT(toggleActive()));
-        connect(this, SIGNAL(modeChanged()),root, SIGNAL(resetModel()));
-        connect(root, SIGNAL(qmlRemoveWindowThumbnail(int, int, QVariant)), this, SLOT(removeEffectWindow(int, int, QVariant)));
-        connect(this, SIGNAL(forceResetDesktopModel()), root, SIGNAL(qmlForceResetDesktopModel()));
-        connect(this, SIGNAL(updateDesktopThumBackground()), root, SIGNAL(qmlUpdateDesktopThumBackground()));
-        connect(m_multitaskingModel, SIGNAL(currentDesktopChanged(int)), root, SIGNAL(qmlUpdateBackground()));
-        connect(m_multitaskingModel, SIGNAL(updateQmlBackground()), root, SIGNAL(qmlUpdateBackground()));
-
-        EffectWindow* active_window = effects->activeWindow();
-        if (active_window && !active_window->isSpecialWindow()) {
-           m_multitaskingModel->setCurrentSelectIndex(findWId(active_window));
-        } else {
-            m_multitaskingModel->setCurrentSelectIndex(-1);
-        }
     } else {
         if (m_hasKeyboardGrab) {
             effects->ungrabKeyboard();
@@ -1367,9 +1237,6 @@ void MultitaskingEffect::setActive(bool active)
         // set nullptr to avoid confusing prepaintscreen check
         setMultitaskingViewEffectWindow(nullptr);
     }
-}
-
-void MultitaskingEffect::OnWindowLocateChanged(int screen,int desktop,int winid){
 }
 
 void MultitaskingEffect::globalShortcutChanged(QAction *action, const QKeySequence &seq)
@@ -1539,13 +1406,13 @@ bool MultitaskingEffect::isOverlappingAny(EffectWindow *w, const QHash<EffectWin
 
 void MultitaskingEffect::refreshWindows()
 {
-    const int desktopCount = m_thumbManager->desktopCount();
-    for (int d = 1; d <= desktopCount; ++d) {
-        for (int screen = 0; screen < effects->numScreens(); ++screen) {
-            auto windows = windowsFor(screen, d);
-            m_multitaskingModel->setWindows(screen, d, windows);
-        }
-    }
+//    const int desktopCount = m_thumbManager->desktopCount();
+//    for (int d = 1; d <= desktopCount; ++d) {
+//        for (int screen = 0; screen < effects->numScreens(); ++screen) {
+//            auto windows = windowsFor(screen, d);
+//            m_multitaskingModel->setWindows(screen, d, windows);
+//        }
+//    }
 }
 
 void MultitaskingEffect::windowSelectSlot( QVariant winid )

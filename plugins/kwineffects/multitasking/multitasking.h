@@ -337,11 +337,7 @@ private slots:
     void closeWindow();
     void toggleWindowKeepAbove();
     void remanageAll();
-
     void desktopRemoved(int d);
-    //zhd add start 
-    void OnWindowLocateChanged(int screen, int desktop, int winId);
-    //zhd add end 
 
     void windowSelectSlot( QVariant winid );
     void removeEffectWindow(int screen, int desktop, QVariant winid);
