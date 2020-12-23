@@ -1217,7 +1217,7 @@ void MultitaskingEffect::setActive(bool active)
         BackgroundManager::instance().setMonitorInfo(screenInfoLst);
 
         m_thumbManager->setGeometry(effects->virtualScreenGeometry());
-        m_multitaskingView->setSource(QUrl("qrc:/qml/thumbmanager.qml"));
+        m_multitaskingView->setSource(QUrl("qrc:/qml/main.qml"));
         m_multitaskingView->setGeometry(effects->virtualScreenGeometry());
         m_hasKeyboardGrab = effects->grabKeyboard(this);
         effects->startMouseInterception(this, Qt::PointingHandCursor);

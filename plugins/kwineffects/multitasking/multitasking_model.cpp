@@ -80,7 +80,6 @@ void MultitaskingModel::setWindows(const QVariantList &windows)
 {
     int index = rowCount();
     emit beginInsertRows(QModelIndex(), index, index);
-//    m_windows.clear();
     for (const QVariant &win : windows) {
         m_windows.append(win);
     }

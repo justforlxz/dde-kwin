@@ -1,6 +1,6 @@
 <RCC>
     <qresource prefix="/qml">
-        <file>thumbmanager.qml</file>
+        <file>main.qml</file>
         <file>DeepinDesktopThumbnail.qml</file>
         <file>DeepinWindowThumbnail.qml</file>
     </qresource>
