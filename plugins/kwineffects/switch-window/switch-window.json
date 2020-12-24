@@ -1,0 +1,22 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "tanfang@uniontech.com",
+                "Name": "tanfang"
+            }
+        ],
+        "Description": "Deepin SwitchWindowView",
+        "Description[zh_CN]": "深度平板切换窗口视图",
+        "EnabledByDefault": true,
+        "Id": "com.deepin.switchwindow",
+        "Name": "switchwindow",
+        "Name[zh_CN]": "平板切换窗口视图",
+        "ServiceTypes": [
+            "KWin/Effect"
+        ],
+        "org.kde.kwin.effect": {
+            "exclusiveGroup": "appearance"
+        }
+    }
+}

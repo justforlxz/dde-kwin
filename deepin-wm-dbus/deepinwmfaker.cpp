@@ -684,6 +684,9 @@ void DeepinWMFaker::PerformAction(int type)
     case wmActionShowAllWindow:
         ShowAllWindow();
         break;
+    case wmActionShowSwitchWindow:
+        ShowSwitchWindow();
+        break;
     default:
         break;
     }
@@ -811,6 +814,11 @@ void DeepinWMFaker::ShowWindow()
 void DeepinWMFaker::ShowWorkspace()
 {
     m_kwinUtilsInter->ShowWorkspacesView();
+}
+
+void DeepinWMFaker::ShowSwitchWindow()
+{
+    m_kwinUtilsInter->ShowSwitchWindowView();
 }
 
 void DeepinWMFaker::setZoneEnabled(bool zoneEnabled)

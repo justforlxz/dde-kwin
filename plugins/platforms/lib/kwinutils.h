@@ -152,6 +152,7 @@ public Q_SLOTS:
     void WindowMaximize();
     void QuickTileWindow(uint side);
     void ShowWorkspacesView();
+    void ShowSwitchWindowView();
     void ShowAllWindowsView();
     void ShowWindowsView();
     void ResumeCompositor(int type);

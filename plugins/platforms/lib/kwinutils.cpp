@@ -1164,9 +1164,18 @@ void KWinUtils::QuickTileWindow(uint side)
 void KWinUtils::ShowWorkspacesView()
 {
     QObject *multitasking = KWin::getEffect("com.deepin.multitasking");
-
     if (multitasking) {
         QMetaObject::invokeMethod(multitasking, "toggleActive");
+    }
+}
+
+void KWinUtils::ShowSwitchWindowView()
+{
+    qDebug()<<"ShowSwitchWindowView"<<__func__<<__LINE__;
+    QObject *switchwindow = KWin::getEffect("com.deepin.switchwindow");
+
+    if (switchwindow) {
+        QMetaObject::invokeMethod(switchwindow, "toggleActive");
     }
 }
 

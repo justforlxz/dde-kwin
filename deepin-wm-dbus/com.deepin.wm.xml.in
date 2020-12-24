@@ -23,6 +23,8 @@
     </method>
     <method name="ShowWorkspace">
     </method>
+     <method name="ShowSwitchWindow">
+    </method>
     <method name="ShowWindow">
     </method>
     <method name="ShowAllWindow">

@@ -12,6 +12,8 @@
     </method>
     <method name="ShowWorkspacesView">
     </method>
+    <method name="ShowSwitchWindowView">
+    </method>
     <method name="ShowWindowsView">
     </method>
     <method name="ShowAllWindowsView">

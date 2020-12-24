@@ -1,0 +1,93 @@
+/*
+ * Copyright (C) 2020 ~ 2022 Deepin Technology Co., Ltd.
+ *
+ * Author:     tanfang <tanfang@uniontech.com>
+ *
+ * Maintainer: tanfang <tanfang@uniontech.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+#ifndef _DEEPIN_SWITCH_Client_H
+#define _DEEPIN_SWITCH_Client_H
+
+#include <kwineffects.h>
+#include <kwinglplatform.h>
+#include <kwinglutils.h>
+
+#include <QVector>
+#include <QVector2D>
+#include <QTimeLine>
+#include <QQueue>
+#include <kwineffects.h>
+
+using namespace KWin;
+
+/**
+ *  Deepin SwitchWindow View Effect
+ **/
+class Q_DECL_HIDDEN SwitchWindowEffect : public Effect
+{
+    Q_OBJECT
+public:
+    SwitchWindowEffect(QObject *parent = nullptr, const QVariantList &args = QVariantList());
+    virtual ~SwitchWindowEffect();
+
+    static bool supported();
+    virtual void reconfigure(ReconfigureFlags) override;
+
+    // Screen painting
+    virtual void prePaintScreen(ScreenPrePaintData &data, int time) override;
+    virtual void paintScreen(int mask, QRegion region, ScreenPaintData &data) override;
+    virtual void postPaintScreen() override;
+
+    // Window painting
+    virtual void prePaintWindow(EffectWindow *w, WindowPrePaintData &data, int time) override;
+    virtual void paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data) override;
+
+    // User interaction
+    virtual void windowInputMouseEvent(QEvent *e) override;
+    virtual bool isActive() const override;
+
+public Q_SLOTS:
+    void setActive(bool active);
+    void toggleActive()  {
+        setActive(!m_activated);
+    }
+private:
+    struct MoveEffectWindow{
+        uint index;
+        EffectWindow* window;
+    };
+private:
+    void moveToNextWindow();
+    void initWindowTargets(EffectWindow * w , uint index);
+    bool isRelevantWithPresentWindows(EffectWindow *w) const;
+    // close animation finished
+    void cleanup();
+
+private:
+     bool m_activated {false};
+     QQueue<MoveEffectWindow> m_moveingEffectWindows;
+     WindowMotionManager m_windowMotionManager;
+     // timeline for toggleActive
+     QTimeLine m_toggleTimeline;
+};
+
+
+
+
+#endif /* ifndef _DEEPIN_MULTITASKING_H */
+

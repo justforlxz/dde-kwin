@@ -33,6 +33,7 @@ public:
         wmActionMinimize = 3,
         wmActionShowWindow    = 6,
         wmActionShowAllWindow = 7,
+        wmActionShowSwitchWindow = 8,
     };
 
     enum LayoutDirection {
@@ -119,6 +120,7 @@ public Q_SLOTS:
     void ShowAllWindow();
     void ShowWindow();
     void ShowWorkspace();
+    void ShowSwitchWindow();
 
     void setZoneEnabled(bool zoneEnabled);
 
