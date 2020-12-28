@@ -293,6 +293,7 @@ public Q_SLOTS:
     void globalShortcutChanged(QAction *action, const QKeySequence &seq);
     void onWindowAdded(KWin::EffectWindow*);
     void onWindowClosed(KWin::EffectWindow*);
+    void onWindowClosed(QVariant winId);
     void onWindowDeleted(KWin::EffectWindow*);
     void onPropertyNotify(KWin::EffectWindow *w, long atom);
 
@@ -340,7 +341,7 @@ private slots:
     void remanageAll();
     void desktopRemoved(int d);
 
-    void windowSelectSlot( QVariant winid );
+    void onSwitchWindow(QVariant winId);
     void removeEffectWindow(int screen, int desktop, QVariant winid);
 
     EffectWindow* multitaskingViewEffectWindow() {

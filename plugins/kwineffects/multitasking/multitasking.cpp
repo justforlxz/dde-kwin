@@ -273,7 +273,6 @@ MultitaskingEffect::MultitaskingEffect()
     connect(KGlobalAccel::self(), &KGlobalAccel::globalShortcutChanged, this, &MultitaskingEffect::globalShortcutChanged);
     connect(effects, &EffectsHandler::windowAdded, this, &MultitaskingEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &MultitaskingEffect::onWindowDeleted);
-    connect(effects, &EffectsHandler::windowClosed, this, &MultitaskingEffect::onWindowClosed);
     connect(effects, SIGNAL(closeEffect(bool)), this, SLOT(slotCloseEffect(bool)));
 
     connect(effects, &EffectsHandler::numberDesktopsChanged, this, &MultitaskingEffect::onNumberDesktopsChanged);
@@ -408,6 +407,23 @@ void MultitaskingEffect::onWindowClosed(KWin::EffectWindow* w)
 
     refreshWindows();
     emit modeChanged();
+}
+
+void MultitaskingEffect::onWindowClosed(QVariant winId)
+{
+    bool ok = false;
+    qulonglong windowId = winId.toULongLong(&ok);
+    if (!ok) {
+        return;
+    }
+
+    KWin::EffectWindow *effectWindow = effects->findWindow(windowId);
+    if (!effectWindow) {
+        return;
+    }
+
+    effectWindow->closeWindow();
+    m_multitaskingModel->closeWindow(winId);
 }
 
 void MultitaskingEffect::onWindowDeleted(KWin::EffectWindow* w)
@@ -1217,6 +1233,8 @@ void MultitaskingEffect::setActive(bool active)
 
         auto root = m_multitaskingView->rootObject();
         root->setAcceptHoverEvents(true);
+        connect(root, SIGNAL(qmlRequestCloseWindow(QVariant)), this, SLOT(onWindowClosed(QVariant)));
+        connect(root, SIGNAL(qmlRequestSwitchWindow(QVariant)), this, SLOT(onSwitchWindow(QVariant)));
     } else {
         if (m_hasKeyboardGrab) {
             effects->ungrabKeyboard();
@@ -1408,15 +1426,13 @@ void MultitaskingEffect::refreshWindows()
 //    }
 }
 
-void MultitaskingEffect::windowSelectSlot( QVariant winid )
+void MultitaskingEffect::onSwitchWindow(QVariant winId)
 {
     toggleActive();
-    EffectWindow *ew = effects->findWindow(winid.toULongLong());
-    if (ew)
-    {
-        effects->activateWindow( ew );
+    EffectWindow *effectWindow = effects->findWindow(winId.toULongLong());
+    if (effectWindow) {
+        effects->activateWindow(effectWindow);
     }
-
 }
 
 void MultitaskingEffect::removeEffectWindow(int screen, int desktop, QVariant winid)

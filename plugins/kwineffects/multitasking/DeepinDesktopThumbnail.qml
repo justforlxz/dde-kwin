@@ -39,10 +39,19 @@ Rectangle {
             width: view.cellWidth
             height: view.cellHeight
             DeepinWindowThumbnail {
+                id: windowThumbnail
                 winId: WindowThumbnailRole
                 winTitle: WindowTitleRole
                 winIcon: WindowIconRole
                 anchors.fill: item
+
+                MouseArea {
+                    anchors.fill: windowThumbnail
+
+                    onClicked: {
+                        qmlRequestSwitchWindow(windowThumbnail.winId)
+                    }
+                }
             }
         }
     }

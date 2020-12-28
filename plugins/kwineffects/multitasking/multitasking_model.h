@@ -45,9 +45,8 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-
     void setWindowInfoList(const QList<WindowInfo> &windowInfoList);
-    Q_INVOKABLE void remove(int index);
+    void closeWindow(QVariant windowId);
     Q_INVOKABLE int numScreens() const;
     Q_INVOKABLE QRect screenGeometry(int screen) const;
 
