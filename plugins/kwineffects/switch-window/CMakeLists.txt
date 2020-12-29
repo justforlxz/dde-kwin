@@ -8,8 +8,6 @@ add_library(
     main.cpp
 )
 
-include_directories(../../kwin-xcb/lib)
-
 target_link_libraries(
     ${TARGET_NAME}
     PUBLIC

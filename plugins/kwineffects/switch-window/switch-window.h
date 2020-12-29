@@ -20,18 +20,12 @@
  */
 
 
-#ifndef _DEEPIN_SWITCH_Client_H
-#define _DEEPIN_SWITCH_Client_H
+#ifndef _DEEPIN_SWITCH_CLIENT_H
+#define _DEEPIN_SWITCH_CLIENT_H
 
 #include <kwineffects.h>
 #include <kwinglplatform.h>
-#include <kwinglutils.h>
-
-#include <QVector>
-#include <QVector2D>
 #include <QTimeLine>
-#include <QQueue>
-#include <kwineffects.h>
 
 using namespace KWin;
 
@@ -58,7 +52,6 @@ public:
     virtual void paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data) override;
 
     // User interaction
-    virtual void windowInputMouseEvent(QEvent *e) override;
     virtual bool isActive() const override;
 
 public Q_SLOTS:
@@ -66,21 +59,23 @@ public Q_SLOTS:
     void toggleActive()  {
         setActive(!m_activated);
     }
-private:
-    struct MoveEffectWindow{
-        uint index;
-        EffectWindow* window;
-    };
-private:
+    void moveToPreWindow();
     void moveToNextWindow();
-    void initWindowTargets(EffectWindow * w , uint index);
+private slots:
+    void onWindowAdded(KWin::EffectWindow*);
+    void onWindowClosed(KWin::EffectWindow*);
+    void onWindowDeleted(KWin::EffectWindow*);
+private:
     bool isRelevantWithPresentWindows(EffectWindow *w) const;
+    void updateSwitchingWindows();
     // close animation finished
     void cleanup();
 
 private:
      bool m_activated {false};
-     QQueue<MoveEffectWindow> m_moveingEffectWindows;
+     bool m_moving {false};
+     QList<EffectWindow *> m_moveingEffectWindows;
+     EffectWindow *m_currentEffectWindow;
      WindowMotionManager m_windowMotionManager;
      // timeline for toggleActive
      QTimeLine m_toggleTimeline;
@@ -89,5 +84,5 @@ private:
 
 
 
-#endif /* ifndef _DEEPIN_MULTITASKING_H */
+#endif /* ifndef _DEEPIN_SWITCH_CLIENT_H */
 

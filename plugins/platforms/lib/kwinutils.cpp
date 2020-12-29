@@ -1171,9 +1171,7 @@ void KWinUtils::ShowWorkspacesView()
 
 void KWinUtils::ShowSwitchWindowView()
 {
-    qDebug()<<"ShowSwitchWindowView"<<__func__<<__LINE__;
     QObject *switchwindow = KWin::getEffect("com.deepin.switchwindow");
-
     if (switchwindow) {
         QMetaObject::invokeMethod(switchwindow, "toggleActive");
     }
