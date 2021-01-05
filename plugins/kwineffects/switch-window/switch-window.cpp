@@ -35,7 +35,6 @@ SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &):
 {
     connect(effects, &EffectsHandler::windowAdded, this, &SwitchWindowEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &SwitchWindowEffect::onWindowDeleted);
-    connect(effects, &EffectsHandler::windowClosed, this, &SwitchWindowEffect::onWindowClosed);
     // Load all other configuration details
     reconfigure(ReconfigureAll);
 }
@@ -165,7 +164,6 @@ void SwitchWindowEffect::setActive(bool active)
     m_activated = active;
     if(active) {
         effects->setShowingDesktop(false);
-        effects->startMouseInterception(this, Qt::PointingHandCursor);
         effects->setActiveFullScreenEffect(this);
     }
     else {
@@ -262,22 +260,16 @@ void SwitchWindowEffect::onWindowAdded(EffectWindow *w)
     m_moveingEffectWindows.insert(0,w);
 }
 
-void SwitchWindowEffect::onWindowClosed(EffectWindow *w)
-{
-    m_moveingEffectWindows.removeOne(w);
-    if(m_moveingEffectWindows.size() > 0) {
-        effects->activateWindow(m_moveingEffectWindows.first());
-        effects->addRepaintFull();
-    }
-}
-
 void SwitchWindowEffect::onWindowDeleted(EffectWindow *w)
 {
-    if(m_moveingEffectWindows.contains(w)) {
+    if (m_moveingEffectWindows.contains(w)) {
         m_moveingEffectWindows.removeOne(w);
-        if(m_moveingEffectWindows.size() > 0) {
-            effects->activateWindow(m_moveingEffectWindows.first());
-            effects->addRepaintFull();
+        if (m_moveingEffectWindows.size() > 0) {
+            EffectWindow * w = m_moveingEffectWindows.first();
+            if (!w->isMinimized()) {
+                effects->activateWindow(w);
+                effects->addRepaintFull();
+            }
         }
     }
 }
@@ -332,7 +324,6 @@ void SwitchWindowEffect::cleanup()
     if (m_activated) {
         return;
     }
-    effects->stopMouseInterception(this);
     effects->setActiveFullScreenEffect(0);
     m_windowMotionManager.unmanageAll();
     m_toggleTimeline.setCurrentTime(0); // end moving

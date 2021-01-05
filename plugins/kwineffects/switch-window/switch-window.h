@@ -63,7 +63,6 @@ public Q_SLOTS:
     void moveToNextWindow();
 private slots:
     void onWindowAdded(KWin::EffectWindow*);
-    void onWindowClosed(KWin::EffectWindow*);
     void onWindowDeleted(KWin::EffectWindow*);
 private:
     bool isRelevantWithPresentWindows(EffectWindow *w) const;
