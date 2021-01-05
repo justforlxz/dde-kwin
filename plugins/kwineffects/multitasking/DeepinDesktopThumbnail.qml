@@ -31,17 +31,17 @@ Rectangle {
         anchors.fill: parent
         layoutDirection : Qt.RightToLeft
         flow: GridView.FlowTopToBottom
-        cellWidth: 100
-        cellHeight: 100
+        cellWidth: view.width * 0.3
+        cellHeight: view.height * 0.3 + 50
 
         delegate: Item {
             id: item
-            width: 100
-            height: 100
+            width: view.cellWidth
+            height: view.cellHeight
             DeepinWindowThumbnail {
-                winId: ThumbnailRole
-                winTitle: "hello"
-                //winIcon:
+                winId: WindowThumbnailRole
+                winTitle: WindowTitleRole
+                winIcon: WindowIconRole
                 anchors.fill: item
             }
         }

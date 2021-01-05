@@ -29,13 +29,14 @@ Rectangle {
     property alias winTitle: windowTitle.text
     property alias winIcon: windowIcon.source
     property alias winId: windowThumbnail.winId
+    color: "transparent"
 
     Column{
         Row {
             Image {
                 id: windowIcon
-                width: 20
-                height: 20
+                width: 50
+                height: 50
             }
 
             Text {

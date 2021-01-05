@@ -10,6 +10,17 @@ ImageProvider::ImageProvider(QQmlImageProviderBase::ImageType type, QQmlImagePro
 QPixmap ImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(size);
-    Q_UNUSED(requestedSize);
-    return  m_pMultitaskingModel->getWindowIcon( id );
+
+    bool ok = false;
+    qulonglong winId = id.toULongLong(&ok);
+    if (!ok) {
+        return QPixmap();
+    }
+
+    EffectWindow *window = effects->findWindow(winId);
+    if (window) {
+        return window->icon().pixmap(QSize(Constants::ICON_SIZE, Constants::ICON_SIZE));
+    }
+
+    return QPixmap();
 }

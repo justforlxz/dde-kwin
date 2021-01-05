@@ -41,8 +41,8 @@ public:
     void setWindowTitle(const QString &windowTitle);
     QString windowTitle() const;
 
-    void setWindowIcon(const QIcon &windowIcon);
-    QIcon windowIcon() const;
+    void setWindowIcon(const QString &windowIcon);
+    QString windowIcon() const;
 
 signals:
     void windowIdChanged(QVariant winId);
@@ -52,7 +52,7 @@ signals:
 private:
     QVariant m_windowId;
     QString  m_windowTitle;
-    QIcon    m_windowIcon;
+    QString  m_windowIcon;
 };
 
 Q_DECLARE_METATYPE(WindowInfo)

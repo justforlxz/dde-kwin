@@ -1,14 +1,14 @@
 import QtQuick 2.0
 import org.kde.plasma 2.0 as PlasmaCore
+import QtQuick.Window 2.11
 
 Rectangle {
     id: root
     x: 0
     y: 0
-    width: 1920
-    height: 1080
-    color: "gray"
-    objectName: "root"
+    width: Screen.desktopAvailableWidth
+    height: Screen.desktopAvailableHeight
+    color: "transparent"
 
     function log(msg) {
         manager.debugLog(msg)
@@ -18,9 +18,9 @@ Rectangle {
     signal qmlRequestCloseWindow(var window)
 
     DeepinDesktopThumbnail {
-        width: 800
-        height: 600
+        anchors.fill: root
         model: multitaskingModel
+        color: "transparent"
     }
 }
 

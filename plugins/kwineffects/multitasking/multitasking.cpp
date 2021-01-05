@@ -287,6 +287,7 @@ MultitaskingEffect::MultitaskingEffect()
 
     // Load all other configuration details
     reconfigure(ReconfigureAll);
+
 }
 
 MultitaskingEffect::~MultitaskingEffect()
@@ -475,25 +476,22 @@ void MultitaskingEffect::updateDesktopWindows()
     }
 }
 
-QVariantList MultitaskingEffect::windowsFor(int screen, int desktop)
+QList<WindowInfo> MultitaskingEffect::windowsFor()
 {
-    QVariantList vl;
-    QDesktopWidget dw;
+    QList<WindowInfo> windowInfoList;
     for (const auto& ew: effects->stackingOrder()) {
-        if (isRelevantWithPresentWindows(ew) && ew->isOnAllDesktops() && effects->screenNumber(ew->pos()) == screen) {
-            auto wid = findWId(ew);
-            assert (effects->findWindow(wid) == ew);
-            vl.append(wid);
-        }
-        if (isRelevantWithPresentWindows(ew) && ew->desktop() == desktop) {
-            if (effects->screenNumber(ew->pos()) == screen) {
-                auto wid = findWId(ew);
-                assert (effects->findWindow(wid) == ew);
-                vl.append(wid);
-            }
+        if (isRelevantWithPresentWindows(ew)) {
+            WId winId = findWId(ew);
+            WindowInfo windowInfo;
+            windowInfo.setWindowId(winId);
+            windowInfo.setWindowTitle(ew->caption());
+            assert (effects->findWindow(winId) == ew);
+
+            windowInfoList.append(windowInfo);
         }
     }
-    return vl;
+
+    return windowInfoList;
 }
 
 void MultitaskingEffect::onScreenSizeChanged()
@@ -1179,18 +1177,13 @@ void MultitaskingEffect::setActive(bool active)
         if (m_targetDesktop != effects->currentDesktop()) {
             m_targetDesktop = effects->currentDesktop();
         }
-        const int desktopCount = effects->numberOfDesktops();
-        for (int d = 1; d <= desktopCount; ++d) {
-            for (int screen = 0; screen < effects->numScreens(); ++screen) {
-                QVariantList windows = windowsFor(screen, d);
-                m_multitaskingModel->setWindows(windows);
-            }
-        }
+
+        QList<WindowInfo> windowInfoList = windowsFor();
+        m_multitaskingModel->setWindowInfoList(windowInfoList);
 
         if (!m_multitaskingView) {
             m_multitaskingView = new QQuickWidget;
-            m_multitaskingView->engine()->addImageProvider( QLatin1String("imageProvider"), new ImageProvider(QQmlImageProviderBase::Pixmap));
-            m_multitaskingView->engine()->addImageProvider( QLatin1String("BackgroundImageProvider"), new BackgroundImageProvider(QQmlImageProviderBase::Pixmap));
+            m_multitaskingView->engine()->addImageProvider(QLatin1String("imageProvider"), new ImageProvider(QQmlImageProviderBase::Pixmap));
             m_multitaskingView->setAttribute(Qt::WA_TranslucentBackground, true);
             m_multitaskingView->setClearColor(Qt::transparent);
             QSurfaceFormat fmt = m_multitaskingView->format();

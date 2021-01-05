@@ -26,6 +26,7 @@
 #include <KF5/KWindowSystem/KWindowSystem>
 #include <QAbstractListModel>
 #include "multitasking.h"
+#include "windowinfo.h"
 
 class MultitaskingModel : public QAbstractListModel
 {
@@ -33,7 +34,9 @@ class MultitaskingModel : public QAbstractListModel
 
 public:
     enum DataRoles{
-        ThumbnailRole = Qt::UserRole + 1,
+        WindowThumbnailRole = Qt::UserRole + 1,
+        WindowTitleRole     = Qt::UserRole + 2,
+        WindowIconRole      = Qt::UserRole + 3
     };
 
     explicit MultitaskingModel(QObject *parent = nullptr);
@@ -43,7 +46,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
 
-    void setWindows(const QVariantList &windows);
+    void setWindowInfoList(const QList<WindowInfo> &windowInfoList);
     Q_INVOKABLE void remove(int index);
     Q_INVOKABLE int numScreens() const;
     Q_INVOKABLE QRect screenGeometry(int screen) const;
@@ -51,14 +54,11 @@ public:
     Q_INVOKABLE QPixmap getWindowIcon( QVariant winId );
     bool isCurrentScreensEmpty();
 
-signals:
-
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    QVariantList m_windows;
-    QMap<QVariant,QString> m_windowCaptions;
+    QList<WindowInfo> m_windowInfoList;
 };
 
 #endif // DATAMODEL_H

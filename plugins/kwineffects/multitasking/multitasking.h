@@ -37,6 +37,7 @@
 
 #include "background.h"
 #include "constants.h"
+#include "windowinfo.h"
 
 using namespace KWin;
 
@@ -320,7 +321,7 @@ public Q_SLOTS:
 
     WId findWId(EffectWindow* ew);
 
-    QVariantList windowsFor(int screen, int desktop);
+    QList<WindowInfo> windowsFor();
     void updateDesktopWindows();
     void updateDesktopWindows(int desktop);
 

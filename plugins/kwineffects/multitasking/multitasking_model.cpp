@@ -37,19 +37,23 @@ MultitaskingModel::~MultitaskingModel()
 int MultitaskingModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return m_windows.count();
+    return m_windowInfoList.count();
 }
 
 QVariant MultitaskingModel::data(const QModelIndex &index, int role) const
 {
     int row = index.row();
-    if (row < 0 || row >= m_windows.count()) {
+    if (row < 0 || row >= m_windowInfoList.count()) {
         return QVariant();
     }
 
     switch (role) {
-    case ThumbnailRole:
-        return m_windows[row];
+    case WindowThumbnailRole:
+        return m_windowInfoList.at(row).windowId();
+    case WindowTitleRole:
+        return m_windowInfoList.at(row).windowTitle();
+    case WindowIconRole:
+        return m_windowInfoList.at(row).windowIcon();
     default:
         break;
     }
@@ -60,8 +64,9 @@ QVariant MultitaskingModel::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> MultitaskingModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[ThumbnailRole] = "ThumbnailRole";
-
+    roles[WindowThumbnailRole] = "WindowThumbnailRole";
+    roles[WindowTitleRole]     = "WindowTitleRole";
+    roles[WindowIconRole]      = "WindowIconRole";
     return roles;
 }
 
@@ -76,13 +81,11 @@ QRect MultitaskingModel::screenGeometry(int screen) const
 }
 
 
-void MultitaskingModel::setWindows(const QVariantList &windows)
+void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoList)
 {
     int index = rowCount();
     emit beginInsertRows(QModelIndex(), index, index);
-    for (const QVariant &win : windows) {
-        m_windows.append(win);
-    }
+    m_windowInfoList = windowInfoList;
     emit endInsertRows();
 }
 
@@ -99,7 +102,7 @@ void MultitaskingModel::remove(int index)
     }
 
     beginRemoveRows(QModelIndex(), index, index);
-    m_windows.removeAt(index);
+    m_windowInfoList.removeAt(index);
     endRemoveRows();
 }
 
