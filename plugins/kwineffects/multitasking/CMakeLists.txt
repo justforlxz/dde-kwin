@@ -85,6 +85,7 @@ set(SRCS
     background.cpp
     factory.cpp
     windowthumbnail.cpp
+    windowinfo.cpp
     main.qml
     DeepinWindowThumbnail.qml
     DeepinDesktopThumbnail.qml
