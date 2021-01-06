@@ -31,22 +31,61 @@ Rectangle {
         anchors.fill: parent
         layoutDirection : Qt.RightToLeft
         flow: GridView.FlowTopToBottom
-        cellWidth: view.width * 0.3
-        cellHeight: view.height * 0.3 + 50
+        cellWidth: view.width * 0.4
+        cellHeight: view.height * 0.5
 
         delegate: Item {
             id: item
-            width: view.cellWidth
-            height: view.cellHeight
+            anchors.margins: 10
             DeepinWindowThumbnail {
                 id: windowThumbnail
                 winId: WindowThumbnailRole
                 winTitle: WindowTitleRole
                 winIcon: WindowIconRole
-                anchors.fill: item
+                x: 10
+                y: view.cellHeight * 0.1
+                width: view.cellWidth * 0.8
+                height: view.cellHeight * 0.8
+
+                ParallelAnimation {
+                    id: goBack
+                    /*NumberAnimation {
+                        target: windowThumbnail
+                        property: "x"
+                        to: 0
+                        duration: 500
+                        easing.type: Easing.OutBounce
+                    }*/
+                    NumberAnimation {
+                        target: windowThumbnail
+                        property: "y"
+                        to: view.cellHeight * 0.1
+                        duration: 500
+                        easing.type: Easing.OutBounce
+                    }
+                }
+
+                function goBackAnimation() {
+                    goBack.start()
+                }
 
                 MouseArea {
                     anchors.fill: windowThumbnail
+                    property point clickPos
+                    drag.target: windowThumbnail
+                    drag.axis: Drag.YAxis
+
+                    onPressed: {
+                        clickPos = Qt.point(mouse.x, mouse.y)
+                    }
+                    onPositionChanged: {
+                        var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
+                        var y = windowThumbnail.y
+                        windowThumbnail.y = y + delta.y
+                    }
+                    onReleased: {
+                        windowThumbnail.goBackAnimation()
+                    }
 
                     onClicked: {
                         qmlRequestSwitchWindow(windowThumbnail.winId)
