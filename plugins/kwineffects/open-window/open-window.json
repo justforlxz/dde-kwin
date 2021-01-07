@@ -1,0 +1,22 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "tanfang@uniontech.com",
+                "Name": "tanfang"
+            }
+        ],
+        "Description": "Deepin OpenWindow",
+        "Description[zh_CN]": "深度平板打开窗口特效",
+        "EnabledByDefault": true,
+        "Id": "com.deepin.openwindow",
+        "Name": "openwindow",
+        "Name[zh_CN]": "平板打开窗口特效",
+        "ServiceTypes": [
+            "KWin/Effect"
+        ],
+        "org.kde.kwin.effect": {
+            "exclusiveGroup": "appearance"
+        }
+    }
+}
