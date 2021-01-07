@@ -23,18 +23,17 @@
 #include <QMouseEvent>
 
 namespace  SwitchConsts{
-    const QEasingCurve TOGGLE_MODE =  QEasingCurve::InOutQuint;// AnimationMode.EASE_OUT_QUINT;
-    static const int FADE_DURATION = 500;
+    const QEasingCurve TOGGLE_MODE =  QEasingCurve::OutExpo;// AnimationMode.EASE_OUT_Expo;
+    static const int FADE_DURATION = 600;
     static const int SWITCH_SPACE = 50;
 }
 
 SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &):
-    Effect(),
-    m_activated(false),
-    m_currentEffectWindow(nullptr)
+    Effect()
 {
     connect(effects, &EffectsHandler::windowAdded, this, &SwitchWindowEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &SwitchWindowEffect::onWindowDeleted);
+    connect(effects, &EffectsHandler::windowUnminimized, this, &SwitchWindowEffect::onWindowUnminimized);
     // Load all other configuration details
     reconfigure(ReconfigureAll);
 }
@@ -52,24 +51,20 @@ bool SwitchWindowEffect::supported()
 
 void SwitchWindowEffect::reconfigure(Effect::ReconfigureFlags)
 {
-    m_toggleTimeline.setDuration(SwitchConsts::FADE_DURATION);
-    m_toggleTimeline.setEasingCurve(SwitchConsts::TOGGLE_MODE);
+    m_duration = std::chrono::milliseconds(static_cast<int>(animationTime(SwitchConsts::FADE_DURATION)));
+    m_animationTimeline.setDuration(m_duration);
+    m_animationTimeline.setDirection(TimeLine::Forward);//0~1
+    m_animationTimeline.setEasingCurve(SwitchConsts::TOGGLE_MODE);
     updateSwitchingWindows();
 }
 
 void SwitchWindowEffect::prePaintScreen(ScreenPrePaintData &data, int time)
 {
-    if (isActive()){
-        if(m_activated && m_moving){
-            int new_time = m_toggleTimeline.currentTime() + (m_activated ? time: -time);
-            m_toggleTimeline.setCurrentTime(new_time);
-            //qDebug()<<__func__<<"m_toggleTimeline:"<<m_toggleTimeline.currentTime();
+    if (isActive()) {
+        if (m_activated && m_moving) {
+            const std::chrono::milliseconds delta(time);
+            m_animationTimeline.update(delta);
             data.mask |= PAINT_SCREEN_WITH_TRANSFORMED_WINDOWS;
-            m_windowMotionManager.calculate(time / 2.f); // moving
-        }
-
-        if (!m_activated && m_toggleTimeline.currentValue() == 0) {
-            cleanup();
         }
     }
     // this makes blurred windows work, should we need it ?
@@ -79,24 +74,20 @@ void SwitchWindowEffect::prePaintScreen(ScreenPrePaintData &data, int time)
     effects->prePaintScreen(data, time);
 }
 
-void SwitchWindowEffect::paintScreen(int mask, QRegion region, ScreenPaintData &data)
-{
-    effects->paintScreen(mask, region, data);
-}
-
 void SwitchWindowEffect::postPaintScreen()
 {
-    //qDebug()<<__func__<<"m_toggleTimeline:"<<m_toggleTimeline.currentTime()<<":"<<m_toggleTimeline.currentValue();
-    if ((m_activated && m_toggleTimeline.currentValue() != 1)
-            || (!m_activated && m_toggleTimeline.currentValue() != 0))
+    if ((m_activated && m_animationTimeline.running()))
         effects->addRepaintFull();
 
-    if(m_activated && m_toggleTimeline.currentValue() == 1) {
+    if (m_activated && m_animationTimeline.done()) {
         setActive(false);
     }
+
     for (auto const& w: effects->stackingOrder()) {
         w->setData(WindowForceBlurRole, QVariant());
     }
+
+    // Call the next effect.
     effects->postPaintScreen();
 }
 
@@ -104,7 +95,7 @@ void SwitchWindowEffect::postPaintScreen()
 void SwitchWindowEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &data, int time)
 {
     //must have ,else paintwindow it not effect
-    data.mask |= PAINT_WINDOW_TRANSFORMED;
+    data.setTransformed();
 
     if (m_activated) {
         w->enablePainting(EffectWindow::PAINT_DISABLED_BY_MINIMIZE);   // Display always
@@ -124,28 +115,45 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
         effects->paintWindow(w, mask, region, data);
         return;
     }
-    if (m_windowMotionManager.isManaging(w) || w->isDesktop()) {
+    if (m_moving || w->isDesktop()) {
         auto area = effects->clientArea(ScreenArea, 0, 0);
         WindowPaintData d = data;
         if (w->isDesktop()) {
             d.setBrightness(0.4);
             effects->paintWindow(w, mask, area, d);
 
-        }else if (!w->isDesktop()) {
-            auto geo = m_windowMotionManager.transformedGeometry(w);
-            d += QPoint(qRound(geo.x()), qRound(geo.y()));
-            d.setScale(QVector2D((float)geo.width() / w->width(), (float)geo.height() / w->height()));
-            effects->paintWindow(w, mask, area, d);
+        } else if (!w->isDesktop()) {
+            qreal cofe = 0;
+            if (m_preEffectWindow) {
+                if (w == m_currentEffectWindow) {
+                    cofe = m_animationTimeline.value();
+                    data.translate(w->geometry().width() * cofe, 0);
+                } else if (w == m_preEffectWindow) {
+                    cofe = (1 - m_animationTimeline.value()) * -1;
+                    data.translate(w->geometry().width() * cofe - SwitchConsts::SWITCH_SPACE, 0);
+                } else if(m_moveingEffectWindows.indexOf(w) != -1) {
+                    data.translate(w->geometry().width() * -1, 0);
+                }
+            } else if (m_nextEffectWindow) {
+                if (w == m_currentEffectWindow) {
+                    cofe = -m_animationTimeline.value();
+                    data.translate(w->geometry().width() * cofe, 0);
+                } else if (w == m_nextEffectWindow) {
+                    cofe = 1 - m_animationTimeline.value();
+                    data.translate(w->geometry().width() * cofe + SwitchConsts::SWITCH_SPACE, 0);
+                } else if(m_moveingEffectWindows.indexOf(w) != -1) {
+                    data.translate(w->geometry().width() * -1, 0);
+                }
+            }
         }
-
-    }else {
-        effects->paintWindow(w, mask, region, data);
     }
+
+    effects->paintWindow(w, mask, region, data);
 }
 
 bool SwitchWindowEffect::isActive() const
 {
-    return (m_activated || m_toggleTimeline.currentValue() != 0) && !effects->isScreenLocked();
+    return m_activated && !effects->isScreenLocked();
 }
 
 void SwitchWindowEffect::setActive(bool active)
@@ -156,100 +164,53 @@ void SwitchWindowEffect::setActive(bool active)
     if (m_activated == active)
         return;
 
-    if (!m_activated && m_toggleTimeline.currentValue() != 0) {
-        // closing animation is still in effect
+    if (m_activated && m_animationTimeline.running()) {
+        // activate the animation again but it's not over yet.
         return;
     }
 
     m_activated = active;
-    if(active) {
-        effects->setShowingDesktop(false);
+    if (active) {
+        m_animationTimeline.reset(); // set vaule = 0;
         effects->setActiveFullScreenEffect(this);
-    }
-    else {
-       foreach (EffectWindow* w, m_windowMotionManager.managedWindows()) {
-          m_windowMotionManager.moveWindow(w, w->geometry());
-       }
-       cleanup();
+    } else {
+        cleanup();
     }
 }
 
 void SwitchWindowEffect::moveToPreWindow()
 {
-    if(!isActive()) {
+    if (!isActive()) {
         return;
     }
 
-    if(m_moveingEffectWindows.size() <= 1) {
-        m_toggleTimeline.setCurrentTime(1000);
-        effects->addRepaintFull();
+    m_preEffectWindow = getPreWindow();
+    if (m_preEffectWindow == nullptr) {
+        setActive(false);//close paint
         return;
     }
+
     m_moving = true;
-    m_windowMotionManager.reset();
-    m_windowMotionManager.unmanageAll();
-    m_toggleTimeline.setCurrentTime(0);
-    m_moveingEffectWindows.move(0, m_moveingEffectWindows.size() - 1);
-
-    for (int i = 0; i<m_moveingEffectWindows.size(); ++i) {
-        EffectWindow *w = m_moveingEffectWindows[i];
-        m_windowMotionManager.manage(w);
-        int transindex = i + 1;
-        int topindex = i;
-        if(i == m_moveingEffectWindows.size() - 1) {
-            transindex = 0;
-            topindex = -1;
-        }
-        int direct = 1;
-        if(i % 2 != 0) {
-            direct = -1;
-        }
-        if(topindex == 0) {
-            m_currentEffectWindow = w;
-        }
-        QPoint topleft((w->geometry().width() *topindex), w->y());
-        QRect transformedGeom(QPoint((w->geometry().width()) * transindex + SwitchConsts::SWITCH_SPACE * direct, w->y()),
-                              QSize(w->geometry().width(), w->geometry().height()));
-        m_windowMotionManager.setTransformedGeometry(w, transformedGeom);
-        m_windowMotionManager.moveWindow(w, topleft);
-    }
+    m_animationTimeline.reset();
+    m_nextEffectWindow = nullptr;
     effects->addRepaintFull();
 }
 
 void SwitchWindowEffect::moveToNextWindow()
 {
-    if(!isActive()) {
+    if (!isActive()) {
         return;
     }
 
-    if(m_moveingEffectWindows.size() <= 1) {
-        m_toggleTimeline.setCurrentTime(1000);
-        effects->addRepaintFull();
+    m_nextEffectWindow = getNextWindow();
+    if (m_nextEffectWindow == nullptr) {
+        setActive(false);//close paint
         return;
     }
 
     m_moving = true;
-    m_windowMotionManager.reset();
-    m_windowMotionManager.unmanageAll();
-    m_toggleTimeline.setCurrentTime(0);
-    m_moveingEffectWindows.move(m_moveingEffectWindows.size() - 1, 0);
-
-    for (int i = 0; i<m_moveingEffectWindows.size(); ++i) {
-        EffectWindow* w = m_moveingEffectWindows[i];
-        m_windowMotionManager.manage(w);
-        if(i == 0) {
-            m_currentEffectWindow = w;
-        }
-        QPoint topleft((w->geometry().width() * i), w->y());
-        int direct = 1;
-        if(i % 2 != 0) {
-            direct = -1;
-        }
-        QRect transformedGeom(QPoint((w->geometry().width()) *(i - 1) - SwitchConsts::SWITCH_SPACE * direct,
-                                     w->y()), QSize(w->geometry().width() ,w->geometry().height()));
-        m_windowMotionManager.setTransformedGeometry(w ,transformedGeom);
-        m_windowMotionManager.moveWindow(w ,topleft);
-    }
+    m_animationTimeline.reset();
+    m_preEffectWindow = nullptr;
     effects->addRepaintFull();
 }
 
@@ -257,21 +218,21 @@ void SwitchWindowEffect::onWindowAdded(EffectWindow *w)
 {
     if (!isRelevantWithPresentWindows(w))
         return; // don't add
-    m_moveingEffectWindows.insert(0,w);
+    m_currentEffectWindow = w;
+    m_moveingEffectWindows.append(w);
 }
 
 void SwitchWindowEffect::onWindowDeleted(EffectWindow *w)
 {
     if (m_moveingEffectWindows.contains(w)) {
         m_moveingEffectWindows.removeOne(w);
-        if (m_moveingEffectWindows.size() > 0) {
-            EffectWindow * w = m_moveingEffectWindows.first();
-            if (!w->isMinimized()) {
-                effects->activateWindow(w);
-                effects->addRepaintFull();
-            }
-        }
+        m_currentEffectWindow = nullptr;
     }
+}
+
+void SwitchWindowEffect::onWindowUnminimized(EffectWindow *w)
+{
+    m_currentEffectWindow = w;
 }
 
 bool SwitchWindowEffect::isRelevantWithPresentWindows(EffectWindow *w) const
@@ -311,12 +272,42 @@ void SwitchWindowEffect::updateSwitchingWindows()
 {
     m_moveingEffectWindows.clear();
     EffectWindowList windows = effects->stackingOrder();
-    for (int i = windows.size() - 1; i >= 0 ; --i) {
+    for (int i = 0; i < windows.size(); ++i) {
         EffectWindow *w = windows[i];
         if (isRelevantWithPresentWindows(w)) {
             m_moveingEffectWindows.append(w);
         }
     }
+    if (m_moveingEffectWindows.size() > 0) {
+        m_currentEffectWindow = m_moveingEffectWindows.last();
+    }
+}
+
+EffectWindow *SwitchWindowEffect::getNextWindow() const
+{
+    if (m_currentEffectWindow) {
+        if (m_currentEffectWindow == m_moveingEffectWindows.last() || m_moveingEffectWindows.size() <= 1) {
+            return nullptr;//do not switch, have not next window
+        }
+        int cindex = m_moveingEffectWindows.indexOf(m_currentEffectWindow);
+        EffectWindow *w = m_moveingEffectWindows[++cindex];//next window
+        return w;
+
+    }
+    return nullptr;
+}
+
+EffectWindow *SwitchWindowEffect::getPreWindow() const
+{
+    if (m_currentEffectWindow){
+        if (m_currentEffectWindow == m_moveingEffectWindows.first() || m_moveingEffectWindows.size() <= 1) {
+            return nullptr;//do not switch, have not pre window
+        }
+        int cindex = m_moveingEffectWindows.indexOf(m_currentEffectWindow);
+        EffectWindow *w = m_moveingEffectWindows[--cindex];//pre window
+        return w;
+    }
+    return nullptr;
 }
 
 void SwitchWindowEffect::cleanup()
@@ -324,14 +315,16 @@ void SwitchWindowEffect::cleanup()
     if (m_activated) {
         return;
     }
-    effects->setActiveFullScreenEffect(0);
-    m_windowMotionManager.unmanageAll();
-    m_toggleTimeline.setCurrentTime(0); // end moving
-    if(m_currentEffectWindow) {
+
+    if (m_preEffectWindow) {
+        m_currentEffectWindow = m_preEffectWindow;
+    } else if (m_nextEffectWindow) {
+        m_currentEffectWindow = m_nextEffectWindow;
+    }
+    if (m_currentEffectWindow) {
         effects->activateWindow(m_currentEffectWindow);
     }
-    m_currentEffectWindow = nullptr;
     m_moving = false;
-    effects->addRepaintFull();
+    effects->setActiveFullScreenEffect(0);
 }
 

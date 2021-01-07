@@ -25,7 +25,6 @@
 
 #include <kwineffects.h>
 #include <kwinglplatform.h>
-#include <QTimeLine>
 
 using namespace KWin;
 
@@ -44,14 +43,12 @@ public:
 
     // Screen painting
     virtual void prePaintScreen(ScreenPrePaintData &data, int time) override;
-    virtual void paintScreen(int mask, QRegion region, ScreenPaintData &data) override;
     virtual void postPaintScreen() override;
 
     // Window painting
     virtual void prePaintWindow(EffectWindow *w, WindowPrePaintData &data, int time) override;
     virtual void paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data) override;
 
-    // User interaction
     virtual bool isActive() const override;
 
 public Q_SLOTS:
@@ -62,22 +59,28 @@ public Q_SLOTS:
     void moveToPreWindow();
     void moveToNextWindow();
 private slots:
-    void onWindowAdded(KWin::EffectWindow*);
-    void onWindowDeleted(KWin::EffectWindow*);
+    void onWindowAdded(KWin::EffectWindow *);
+    void onWindowDeleted(KWin::EffectWindow *);
+    void onWindowUnminimized(KWin::EffectWindow *);
 private:
     bool isRelevantWithPresentWindows(EffectWindow *w) const;
     void updateSwitchingWindows();
+    EffectWindow *getNextWindow() const;
+    EffectWindow *getPreWindow() const;
     // close animation finished
     void cleanup();
-
 private:
+
      bool m_activated {false};
      bool m_moving {false};
      QList<EffectWindow *> m_moveingEffectWindows;
-     EffectWindow *m_currentEffectWindow;
-     WindowMotionManager m_windowMotionManager;
-     // timeline for toggleActive
-     QTimeLine m_toggleTimeline;
+     EffectWindow *m_currentEffectWindow {nullptr};
+     EffectWindow *m_preEffectWindow {nullptr};
+     EffectWindow *m_nextEffectWindow {nullptr};
+     //animation time duration;
+     std::chrono::milliseconds m_duration;
+     //animation line
+     TimeLine m_animationTimeline;
 };
 
 
