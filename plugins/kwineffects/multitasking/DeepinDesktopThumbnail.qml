@@ -37,6 +37,7 @@ Rectangle {
         delegate: Item {
             id: item
             anchors.margins: 10
+
             DeepinWindowThumbnail {
                 id: windowThumbnail
                 winId: WindowThumbnailRole
@@ -49,24 +50,34 @@ Rectangle {
 
                 ParallelAnimation {
                     id: goBack
-                    /*NumberAnimation {
+                    YAnimator {
                         target: windowThumbnail
-                        property: "x"
-                        to: 0
-                        duration: 500
-                        easing.type: Easing.OutBounce
-                    }*/
-                    NumberAnimation {
-                        target: windowThumbnail
-                        property: "y"
                         to: view.cellHeight * 0.1
                         duration: 500
                         easing.type: Easing.OutBounce
                     }
                 }
 
+                ParallelAnimation {
+                    id: goClose
+                    YAnimator {
+                        target: windowThumbnail
+                        from: windowThumbnail.y
+                        to: -view.height
+                        duration: 500
+                        easing.type: Easing.Linear
+                    }
+                    onStopped: {
+                        qmlRequestCloseWindow(windowThumbnail.winId)
+                    }
+                }
+
                 function goBackAnimation() {
                     goBack.start()
+                }
+
+                function goCloseAnimation() {
+                    goClose.start()
                 }
 
                 MouseArea {
@@ -84,14 +95,19 @@ Rectangle {
                         windowThumbnail.y = y + delta.y
                     }
                     onReleased: {
-                        windowThumbnail.goBackAnimation()
+                        if (windowThumbnail.y < -(view.cellHeight * 0.3))
+                            windowThumbnail.goCloseAnimation()
+                        else
+                            windowThumbnail.goBackAnimation()
                     }
 
                     onClicked: {
                         qmlRequestSwitchWindow(windowThumbnail.winId)
                     }
                 }
+
             }
+
         }
     }
 }
