@@ -17,6 +17,7 @@ Rectangle {
     //sent signal to c++
     signal qmlRequestCloseWindow(var window)
     signal qmlRequestSwitchWindow(var window)
+    signal qmlCloseMultitask()
 
     DeepinDesktopThumbnail {
         anchors.fill: root

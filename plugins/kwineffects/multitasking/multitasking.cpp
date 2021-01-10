@@ -1194,6 +1194,8 @@ void MultitaskingEffect::setActive(bool active)
             m_targetDesktop = effects->currentDesktop();
         }
 
+        effects->setShowingDesktop(true);
+
         QList<WindowInfo> windowInfoList = windowsFor();
         m_multitaskingModel->setWindowInfoList(windowInfoList);
 
@@ -1235,6 +1237,17 @@ void MultitaskingEffect::setActive(bool active)
         root->setAcceptHoverEvents(true);
         connect(root, SIGNAL(qmlRequestCloseWindow(QVariant)), this, SLOT(onWindowClosed(QVariant)));
         connect(root, SIGNAL(qmlRequestSwitchWindow(QVariant)), this, SLOT(onSwitchWindow(QVariant)));
+        connect(root, SIGNAL(qmlCloseMultitask()), this, SLOT(onQuitMultitask()));
+
+        EffectWindowList windows = effects->stackingOrder();
+        EffectWindow *active_window = nullptr;
+        for (const auto &w: windows) {
+            if (!isRelevantWithPresentWindows(w))
+                continue;
+            if (!w->isMinimized())
+                w->setMinimized(true);
+        }
+
     } else {
         if (m_hasKeyboardGrab) {
             effects->ungrabKeyboard();
@@ -1433,6 +1446,11 @@ void MultitaskingEffect::onSwitchWindow(QVariant winId)
     if (effectWindow) {
         effects->activateWindow(effectWindow);
     }
+}
+
+void MultitaskingEffect::onQuitMultitask()
+{
+    toggleActive();
 }
 
 void MultitaskingEffect::removeEffectWindow(int screen, int desktop, QVariant winid)

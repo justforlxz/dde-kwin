@@ -340,7 +340,7 @@ private slots:
     void toggleWindowKeepAbove();
     void remanageAll();
     void desktopRemoved(int d);
-
+    void onQuitMultitask();
     void onSwitchWindow(QVariant winId);
     void removeEffectWindow(int screen, int desktop, QVariant winid);
 

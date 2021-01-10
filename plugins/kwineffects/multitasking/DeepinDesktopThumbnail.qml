@@ -34,6 +34,17 @@ Rectangle {
         cellWidth: view.width * 0.4
         cellHeight: view.height * 0.5
 
+        MouseArea {
+            anchors.fill: parent
+            z: -1
+            propagateComposedEvents: true
+
+            onClicked: {
+                mouse.accepted = false
+                qmlCloseMultitask()
+            }
+        }
+
         delegate: Item {
             id: item
             anchors.margins: 10
