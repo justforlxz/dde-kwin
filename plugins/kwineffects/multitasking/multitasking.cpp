@@ -1178,6 +1178,11 @@ void MultitaskingEffect::clearGrids()
     m_gridSizes.clear();
 }
 
+bool MultitaskingEffect::isShowingMultitask()
+{
+    return m_multitaskingViewVisible;
+}
+
 void MultitaskingEffect::setActive(bool active)
 {
     if (!m_thumbManager) {

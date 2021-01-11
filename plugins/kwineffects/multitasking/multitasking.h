@@ -326,6 +326,7 @@ public Q_SLOTS:
     void updateDesktopWindows();
     void updateDesktopWindows(int desktop);
 
+    bool isShowingMultitask();
     // added when refactor 
     void refreshWindows();
 
