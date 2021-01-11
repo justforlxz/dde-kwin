@@ -34,6 +34,7 @@ SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &):
     connect(effects, &EffectsHandler::windowAdded, this, &SwitchWindowEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &SwitchWindowEffect::onWindowDeleted);
     connect(effects, &EffectsHandler::windowUnminimized, this, &SwitchWindowEffect::onWindowUnminimized);
+    connect(effects, &EffectsHandler::windowMinimized, this, &SwitchWindowEffect::onWindowMminimized);
     // Load all other configuration details
     reconfigure(ReconfigureAll);
 }
@@ -164,6 +165,11 @@ void SwitchWindowEffect::setActive(bool active)
     if (m_activated == active)
         return;
 
+    if (active && !m_currentEffectWindow) {
+        //windows on the desktop are minimized, so return
+        return;
+    }
+
     if (m_activated && m_animationTimeline.running()) {
         // activate the animation again but it's not over yet.
         return;
@@ -233,6 +239,11 @@ void SwitchWindowEffect::onWindowDeleted(EffectWindow *w)
 void SwitchWindowEffect::onWindowUnminimized(EffectWindow *w)
 {
     m_currentEffectWindow = w;
+}
+
+void SwitchWindowEffect::onWindowMminimized(EffectWindow *w)
+{
+    m_currentEffectWindow = nullptr;
 }
 
 bool SwitchWindowEffect::isRelevantWithPresentWindows(EffectWindow *w) const
