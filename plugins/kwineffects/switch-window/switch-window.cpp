@@ -26,6 +26,7 @@ namespace  SwitchConsts{
     const QEasingCurve TOGGLE_MODE =  QEasingCurve::OutExpo;// AnimationMode.EASE_OUT_Expo;
     static const int FADE_DURATION = 600;
     static const int SWITCH_SPACE = 50;
+    static const qreal REBOUND_COEF = 0.85;
 }
 
 SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &):
@@ -41,7 +42,7 @@ SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &):
 
 SwitchWindowEffect::~SwitchWindowEffect()
 {
-    m_moveingEffectWindows.clear();
+    m_movingEffectWindows.clear();
 }
 
 bool SwitchWindowEffect::supported()
@@ -77,7 +78,7 @@ void SwitchWindowEffect::prePaintScreen(ScreenPrePaintData &data, int time)
 
 void SwitchWindowEffect::postPaintScreen()
 {
-    if ((m_activated && m_animationTimeline.running()))
+    if ((m_activated && m_animationTimeline.running() || m_withmoving))
         effects->addRepaintFull();
 
     if (m_activated && m_animationTimeline.done()) {
@@ -116,7 +117,7 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
         effects->paintWindow(w, mask, region, data);
         return;
     }
-    if (m_moving || w->isDesktop()) {
+    if (m_moving || m_withmoving || w->isDesktop()) {
         auto area = effects->clientArea(ScreenArea, 0, 0);
         WindowPaintData d = data;
         if (w->isDesktop()) {
@@ -124,27 +125,67 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
             effects->paintWindow(w, mask, area, d);
 
         } else if (!w->isDesktop()) {
-            qreal cofe = 0;
-            if (m_preEffectWindow) {
-                if (w == m_currentEffectWindow) {
-                    cofe = m_animationTimeline.value();
-                    data.translate(w->geometry().width() * cofe, 0);
-                } else if (w == m_preEffectWindow) {
-                    cofe = (1 - m_animationTimeline.value()) * -1;
-                    data.translate(w->geometry().width() * cofe - SwitchConsts::SWITCH_SPACE, 0);
-                } else if(m_moveingEffectWindows.indexOf(w) != -1) {
-                    data.translate(w->geometry().width() * -1, 0);
+            if (m_withmoving) {
+                if (m_preEffectWindow) {
+                    if (w == m_currentEffectWindow) {
+                        data.translate(m_currentPos,0);
+                    } else if (w == m_preEffectWindow) {
+                        data.translate(w->width() * -1 + m_currentPos - SwitchConsts::SWITCH_SPACE, 0);
+                    } else if(m_movingEffectWindows.indexOf(w) != -1) {
+                        data.translate(w->geometry().width() * -1, 0);
+                    }
+                }  else if (m_nextEffectWindow) {
+                    if (w == m_currentEffectWindow) {
+                        data.translate(m_currentPos - w->width(),0); // -(w - pos) left;
+                    } else if(w == m_nextEffectWindow) {
+                        data.translate(m_currentPos + SwitchConsts::SWITCH_SPACE,0);
+                    } else if(m_movingEffectWindows.indexOf(w) != -1) {
+                        data.translate(w->geometry().width() * -1, 0);
+                    }
                 }
-            } else if (m_nextEffectWindow) {
-                if (w == m_currentEffectWindow) {
-                    cofe = -m_animationTimeline.value();
-                    data.translate(w->geometry().width() * cofe, 0);
-                } else if (w == m_nextEffectWindow) {
-                    cofe = 1 - m_animationTimeline.value();
-                    data.translate(w->geometry().width() * cofe + SwitchConsts::SWITCH_SPACE, 0);
-                } else if(m_moveingEffectWindows.indexOf(w) != -1) {
-                    data.translate(w->geometry().width() * -1, 0);
+
+            } else if(m_moving) {
+                qreal coef = m_animationTimeline.value();
+                int tpos = w->width() * -1;
+                if (m_preEffectWindow) {
+                    if (w == m_currentEffectWindow) {
+                        int bpos = m_currentPos;
+                        int epos = w->width();
+                        tpos = bpos + (epos - bpos) * coef;
+                        if (m_preEffectWindow == m_movingEffectWindows.first() && coef >= SwitchConsts::REBOUND_COEF) {
+                            tpos = epos;
+                        }
+                    } else if (w == m_preEffectWindow) {
+                        int bpos = w->width() * -1 + m_currentPos;
+                        int epos = 0;
+                        tpos = bpos + (epos - bpos) * coef;
+                        if (w == m_movingEffectWindows.first() && coef >= SwitchConsts::REBOUND_COEF) {
+                            tpos = SwitchConsts::SWITCH_SPACE;
+                        } else if ( coef < 1.0) {//center window
+                            tpos -= SwitchConsts::SWITCH_SPACE;
+                        }
+                    }
+                } else if (m_nextEffectWindow) {
+                    if (w == m_currentEffectWindow) {
+                        int bpos = m_currentPos - w->width();
+                        int epos = w->width() * -1;
+                        tpos = bpos + (epos - bpos) * coef;
+                        if (m_nextEffectWindow == m_movingEffectWindows.last() && coef >= SwitchConsts::REBOUND_COEF) {
+                            tpos = epos;
+                        }
+                    } else if (w == m_nextEffectWindow) {
+                        int bpos = m_currentPos;
+                        int epos = 0;
+                        tpos = bpos + (epos - bpos) * coef;
+                        if (w == m_movingEffectWindows.last() && coef >= SwitchConsts::REBOUND_COEF) {
+                            tpos = -SwitchConsts::SWITCH_SPACE;
+                        } else if ( coef < 1.0) {//center window
+                            tpos += SwitchConsts::SWITCH_SPACE;
+                        }
+                    }
                 }
+
+                data.translate(tpos, 0);
             }
         }
     }
@@ -197,9 +238,9 @@ void SwitchWindowEffect::moveToPreWindow()
     }
 
     m_moving = true;
+    m_withmoving = false;
     m_animationTimeline.reset();
     m_nextEffectWindow = nullptr;
-    effects->addRepaintFull();
 }
 
 void SwitchWindowEffect::moveToNextWindow()
@@ -215,9 +256,62 @@ void SwitchWindowEffect::moveToNextWindow()
     }
 
     m_moving = true;
+    m_withmoving = false;
     m_animationTimeline.reset();
     m_preEffectWindow = nullptr;
+
     effects->addRepaintFull();
+}
+
+void SwitchWindowEffect::movingToPreWindow(int x)
+{
+    if (!isActive()) {
+        return;
+    }
+
+    m_preEffectWindow = getPreWindow();
+    if (m_preEffectWindow == nullptr) {
+        setActive(false);//close paint
+        return;
+    }
+
+    m_withmoving = true;
+    m_currentPos = x;
+    m_nextEffectWindow = nullptr;
+    effects->addRepaintFull();
+}
+
+void SwitchWindowEffect::movingToNextWindow(int x)
+{
+    if (!isActive()) {
+        return;
+    }
+
+    m_nextEffectWindow = getNextWindow();
+    if (m_nextEffectWindow == nullptr) {
+        setActive(false);//close paint
+        return;
+    }
+
+    m_withmoving = true;
+    m_currentPos = x;
+    m_preEffectWindow = nullptr;
+    effects->addRepaintFull();
+}
+
+void SwitchWindowEffect::reboundToCurrentWindow()
+{
+    if (!isActive()) {
+        return;
+    }
+
+    if (m_withmoving) {
+        m_withmoving = false;
+        m_currentPos = 0;
+        m_preEffectWindow = nullptr;
+        m_nextEffectWindow = nullptr;
+    }
+    setActive(false);
 }
 
 void SwitchWindowEffect::onWindowAdded(EffectWindow *w)
@@ -225,13 +319,13 @@ void SwitchWindowEffect::onWindowAdded(EffectWindow *w)
     if (!isRelevantWithPresentWindows(w))
         return; // don't add
     m_currentEffectWindow = w;
-    m_moveingEffectWindows.append(w);
+    m_movingEffectWindows.append(w);
 }
 
 void SwitchWindowEffect::onWindowDeleted(EffectWindow *w)
 {
-    if (m_moveingEffectWindows.contains(w)) {
-        m_moveingEffectWindows.removeOne(w);
+    if (m_movingEffectWindows.contains(w)) {
+        m_movingEffectWindows.removeOne(w);
         m_currentEffectWindow = nullptr;
     }
 }
@@ -281,27 +375,27 @@ bool SwitchWindowEffect::isRelevantWithPresentWindows(EffectWindow *w) const
 
 void SwitchWindowEffect::updateSwitchingWindows()
 {
-    m_moveingEffectWindows.clear();
+    m_movingEffectWindows.clear();
     EffectWindowList windows = effects->stackingOrder();
     for (int i = 0; i < windows.size(); ++i) {
         EffectWindow *w = windows[i];
         if (isRelevantWithPresentWindows(w)) {
-            m_moveingEffectWindows.append(w);
+            m_movingEffectWindows.append(w);
         }
     }
-    if (m_moveingEffectWindows.size() > 0) {
-        m_currentEffectWindow = m_moveingEffectWindows.last();
+    if (m_movingEffectWindows.size() > 0) {
+        m_currentEffectWindow = m_movingEffectWindows.last();
     }
 }
 
 EffectWindow *SwitchWindowEffect::getNextWindow() const
 {
     if (m_currentEffectWindow) {
-        if (m_currentEffectWindow == m_moveingEffectWindows.last() || m_moveingEffectWindows.size() <= 1) {
+        if (m_currentEffectWindow == m_movingEffectWindows.last() || m_movingEffectWindows.size() <= 1) {
             return nullptr;//do not switch, have not next window
         }
-        int cindex = m_moveingEffectWindows.indexOf(m_currentEffectWindow);
-        EffectWindow *w = m_moveingEffectWindows[++cindex];//next window
+        int cindex = m_movingEffectWindows.indexOf(m_currentEffectWindow);
+        EffectWindow *w = m_movingEffectWindows[++cindex];//next window
         return w;
 
     }
@@ -311,11 +405,11 @@ EffectWindow *SwitchWindowEffect::getNextWindow() const
 EffectWindow *SwitchWindowEffect::getPreWindow() const
 {
     if (m_currentEffectWindow){
-        if (m_currentEffectWindow == m_moveingEffectWindows.first() || m_moveingEffectWindows.size() <= 1) {
+        if (m_currentEffectWindow == m_movingEffectWindows.first() || m_movingEffectWindows.size() <= 1) {
             return nullptr;//do not switch, have not pre window
         }
-        int cindex = m_moveingEffectWindows.indexOf(m_currentEffectWindow);
-        EffectWindow *w = m_moveingEffectWindows[--cindex];//pre window
+        int cindex = m_movingEffectWindows.indexOf(m_currentEffectWindow);
+        EffectWindow *w = m_movingEffectWindows[--cindex];//pre window
         return w;
     }
     return nullptr;

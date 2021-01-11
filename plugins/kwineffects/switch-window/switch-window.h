@@ -58,11 +58,18 @@ public Q_SLOTS:
     }
     void moveToPreWindow();
     void moveToNextWindow();
+    //follow the gesture
+    void movingToPreWindow(int x);
+    void movingToNextWindow(int x);
+    //spring to currentwindow
+    void reboundToCurrentWindow();
+
 private slots:
     void onWindowAdded(KWin::EffectWindow *);
     void onWindowDeleted(KWin::EffectWindow *);
     void onWindowUnminimized(KWin::EffectWindow *);
     void onWindowMminimized(KWin::EffectWindow *);
+
 private:
     bool isRelevantWithPresentWindows(EffectWindow *w) const;
     void updateSwitchingWindows();
@@ -70,11 +77,16 @@ private:
     EffectWindow *getPreWindow() const;
     // close animation finished
     void cleanup();
+
 private:
 
      bool m_activated {false};
      bool m_moving {false};
-     QList<EffectWindow *> m_moveingEffectWindows;
+     //follow the gesture
+     bool m_withmoving {false};
+     int m_currentPos {0};
+
+     QList<EffectWindow *> m_movingEffectWindows;
      EffectWindow *m_currentEffectWindow {nullptr};
      EffectWindow *m_preEffectWindow {nullptr};
      EffectWindow *m_nextEffectWindow {nullptr};
