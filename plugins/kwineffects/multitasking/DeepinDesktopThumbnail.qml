@@ -31,8 +31,22 @@ Rectangle {
         anchors.fill: parent
         layoutDirection : Qt.RightToLeft
         flow: GridView.FlowTopToBottom
-        cellWidth: view.width * 0.4
-        cellHeight: view.height * 0.5
+        cellWidth: {
+            if (count === 2)
+                return view.width * 0.47
+            else if (count === 1)
+                return view.width * 0.8
+            else
+                return view.width * 0.4
+        }
+        cellHeight: {
+            if (count === 2)
+                return view.height * 0.6
+            else if (count === 1)
+                return view.height * 0.9
+            else
+                return view.height * 0.5
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -55,7 +69,17 @@ Rectangle {
                 winTitle: WindowTitleRole
                 winIcon: WindowIconRole
                 x: 10
-                y: view.cellHeight * 0.1
+                y: {
+                    if (view.count === 2) {
+                        return view.cellHeight * 0.4
+                    }
+                    else if (view.count === 1) {
+                        return view.cellHeight * 0.1
+                    }
+                    else
+                        return view.cellHeight * 0.1
+                }
+
                 width: view.cellWidth * 0.8
                 height: view.cellHeight * 0.8
 
@@ -63,7 +87,14 @@ Rectangle {
                     id: goBack
                     YAnimator {
                         target: windowThumbnail
-                        to: view.cellHeight * 0.1
+                        to: {
+                            if (view.count === 2)
+                                return view.cellHeight * 0.4
+                            else if (view.count === 1)
+                                return view.cellHeight * 0.1
+                            else
+                                return view.cellHeight * 0.1
+                        }
                         duration: 500
                         easing.type: Easing.OutBounce
                     }
@@ -106,7 +137,7 @@ Rectangle {
                         windowThumbnail.y = y + delta.y
                     }
                     onReleased: {
-                        if (windowThumbnail.y < -(view.cellHeight * 0.3))
+                        if (windowThumbnail.y < -(view.cellHeight * 0.25))
                             windowThumbnail.goCloseAnimation()
                         else
                             windowThumbnail.goBackAnimation()
