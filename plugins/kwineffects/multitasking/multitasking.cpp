@@ -44,6 +44,7 @@ const QString actionName = "ShowMultitasking";
 const QString dbusDeepinWmService = "com.deepin.wm";
 const QString dbusDeepinWmObj = "/com/deepin/wm";
 const QString dbusDeepinWmInif =  "com.deepin.wm";
+const QString dueLock = "due-shell";
 
 Q_LOGGING_CATEGORY(BLUR_CAT, "kwin.blur", QtCriticalMsg);
 
@@ -273,6 +274,7 @@ MultitaskingEffect::MultitaskingEffect()
     connect(KGlobalAccel::self(), &KGlobalAccel::globalShortcutChanged, this, &MultitaskingEffect::globalShortcutChanged);
     connect(effects, &EffectsHandler::windowAdded, this, &MultitaskingEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &MultitaskingEffect::onWindowDeleted);
+    connect(effects, &EffectsHandler::windowActivated, this, &MultitaskingEffect::onWindowActivated);
     connect(effects, SIGNAL(closeEffect(bool)), this, SLOT(slotCloseEffect(bool)));
 
     connect(effects, &EffectsHandler::numberDesktopsChanged, this, &MultitaskingEffect::onNumberDesktopsChanged);
@@ -468,6 +470,13 @@ void MultitaskingEffect::onWindowDeleted(KWin::EffectWindow* w)
 
     if (w == m_closingdWindow) {
         m_closingdWindow = nullptr;
+    }
+}
+
+void MultitaskingEffect::onWindowActivated(KWin::EffectWindow *w)
+{
+    if (m_multitaskingViewVisible && w != nullptr && w->windowClass() == dueLock) {
+        setActive(false);
     }
 }
 

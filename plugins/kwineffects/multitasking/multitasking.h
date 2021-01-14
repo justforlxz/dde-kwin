@@ -295,6 +295,7 @@ public Q_SLOTS:
     void onWindowClosed(KWin::EffectWindow*);
     void onWindowClosed(QVariant winId);
     void onWindowDeleted(KWin::EffectWindow*);
+    void onWindowActivated(KWin::EffectWindow*);
     void onPropertyNotify(KWin::EffectWindow *w, long atom);
 
     void appendDesktop();

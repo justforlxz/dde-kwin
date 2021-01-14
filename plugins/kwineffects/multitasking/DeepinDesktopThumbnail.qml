@@ -59,6 +59,12 @@ Rectangle {
             }
         }
 
+        onCountChanged: {
+            if (count === 0) {
+                qmlCloseMultitask()
+            }
+        }
+
         delegate: Item {
             id: item
             anchors.margins: 10
@@ -147,9 +153,7 @@ Rectangle {
                         qmlRequestSwitchWindow(windowThumbnail.winId)
                     }
                 }
-
             }
-
         }
     }
 }
