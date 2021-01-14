@@ -131,22 +131,22 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                         data.translate(m_currentPos,0);
                     } else if (w == m_preEffectWindow) {
                         data.translate(w->width() * -1 + m_currentPos - SwitchConsts::SWITCH_SPACE, 0);
-                    } else if(m_movingEffectWindows.indexOf(w) != -1) {
+                    } else if (m_movingEffectWindows.indexOf(w) != -1) {
                         data.translate(w->geometry().width() * -1, 0);
                     }
                 }  else if (m_nextEffectWindow) {
                     if (w == m_currentEffectWindow) {
                         data.translate(m_currentPos - w->width(),0); // -(w - pos) left;
-                    } else if(w == m_nextEffectWindow) {
+                    } else if (w == m_nextEffectWindow) {
                         data.translate(m_currentPos + SwitchConsts::SWITCH_SPACE,0);
-                    } else if(m_movingEffectWindows.indexOf(w) != -1) {
+                    } else if (m_movingEffectWindows.indexOf(w) != -1) {
                         data.translate(w->geometry().width() * -1, 0);
                     }
                 }
 
             } else if(m_moving) {
                 qreal coef = m_animationTimeline.value();
-                int tpos = w->width() * -1;
+                int tpos = 0;
                 if (m_preEffectWindow) {
                     if (w == m_currentEffectWindow) {
                         int bpos = m_currentPos;
@@ -164,6 +164,8 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                         } else if ( coef < 1.0) {//center window
                             tpos -= SwitchConsts::SWITCH_SPACE;
                         }
+                    } else if (m_movingEffectWindows.indexOf(w) != -1) {
+                        tpos = w->width() * -1;
                     }
                 } else if (m_nextEffectWindow) {
                     if (w == m_currentEffectWindow) {
@@ -182,6 +184,8 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                         } else if ( coef < 1.0) {//center window
                             tpos += SwitchConsts::SWITCH_SPACE;
                         }
+                    } else if (m_movingEffectWindows.indexOf(w) != -1) {
+                        tpos = w->width() * -1;
                     }
                 }
 
