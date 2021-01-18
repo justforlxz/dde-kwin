@@ -31,6 +31,7 @@ Rectangle {
         anchors.fill: parent
         layoutDirection : Qt.RightToLeft
         flow: GridView.FlowTopToBottom
+
         cellWidth: {
             if (count === 2)
                 return view.width * 0.47
@@ -55,7 +56,11 @@ Rectangle {
 
             onClicked: {
                 mouse.accepted = false
-                qmlCloseMultitask()
+                if (view.count > 0) {
+                    closeMultiTask()
+                } else {
+                    qmlCloseMultitask()
+                }
             }
         }
 
@@ -68,13 +73,19 @@ Rectangle {
         delegate: Item {
             id: item
             anchors.margins: 10
+            property bool taskEnter: true
+            property int column: view.model.columnAt(index)
+            property int offScreenX: -(root.width + column * view.cellWidth)
 
             DeepinWindowThumbnail {
                 id: windowThumbnail
                 winId: WindowThumbnailRole
                 winTitle: WindowTitleRole
                 winIcon: WindowIconRole
-                x: 10
+                Component.onCompleted: {
+                    windowThumbnail.state = "taskEnter"
+                }
+
                 y: {
                     if (view.count === 2) {
                         return view.cellHeight * 0.4
@@ -117,6 +128,44 @@ Rectangle {
                     }
                     onStopped: {
                         qmlRequestCloseWindow(windowThumbnail.winId)
+                    }
+                }
+
+                state: "taskLeave"
+
+                states: [
+                    State {
+                        name: "taskEnter"
+                        PropertyChanges { target: windowThumbnail; x: 10 }
+                    },
+                    State {
+                        name: "taskLeave"
+                        PropertyChanges { target: windowThumbnail; x: offScreenX }
+                    }
+                ]
+
+                transitions: [
+                    Transition {
+                        from: "taskLeave"; to: "taskEnter"
+                        XAnimator { target: windowThumbnail; duration: (800 + column * 100); easing.type: Easing.OutCubic }
+                    },
+                    Transition {
+                        from: "taskEnter"; to: "taskLeave"
+                        XAnimator { target: windowThumbnail; duration: 500; easing.type: Easing.Linear }
+
+                        onRunningChanged: {
+                            if(!running && index === 0 ) {
+                                qmlCloseMultitask()
+                            }
+                        }
+                    }
+                ]
+
+                Connections {
+                    target: root
+
+                    onCloseMultiTask: {
+                        windowThumbnail.state = "taskLeave"
                     }
                 }
 

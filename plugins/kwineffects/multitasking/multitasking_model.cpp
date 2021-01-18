@@ -22,6 +22,7 @@
 #include <QDBusInterface>
 #include <QDBusReply>
 #include <QScreen>
+#include <QtMath>
 
 #include "multitasking_model.h"
 
@@ -80,6 +81,20 @@ QRect MultitaskingModel::screenGeometry(int screen) const
     return effects->clientArea(FullScreenArea,screen,effects->currentDesktop());
 }
 
+int MultitaskingModel::columnAt(int index) const
+{
+    if ( index < 0)
+        return 0;
+
+    int count = m_windowInfoList.length();
+    if (count > 2) {
+       int mid = count - qFloor(count / 2.0);
+       if (index > mid)
+           index = index - mid;
+    }
+
+    return index;
+}
 
 void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoList)
 {
@@ -88,7 +103,6 @@ void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoLis
     m_windowInfoList = windowInfoList;
     emit endInsertRows();
 }
-
 
 void MultitaskingModel::closeWindow(QVariant windowId)
 {

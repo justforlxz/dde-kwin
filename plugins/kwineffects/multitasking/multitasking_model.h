@@ -49,6 +49,7 @@ public:
     void closeWindow(QVariant windowId);
     Q_INVOKABLE int numScreens() const;
     Q_INVOKABLE QRect screenGeometry(int screen) const;
+    Q_INVOKABLE int columnAt(int index) const;
 
     Q_INVOKABLE QPixmap getWindowIcon( QVariant winId );
     bool isCurrentScreensEmpty();
