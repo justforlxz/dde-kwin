@@ -20,17 +20,16 @@
  */
 
 #include "switch-window.h"
-#include <QMouseEvent>
 
-namespace  SwitchConsts{
+namespace SwitchConsts {
     const QEasingCurve TOGGLE_MODE =  QEasingCurve::OutExpo;// AnimationMode.EASE_OUT_Expo;
     static const int FADE_DURATION = 600;
     static const int SWITCH_SPACE = 50;
     static const qreal REBOUND_COEF = 0.85;
 }
 
-SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &):
-    Effect()
+SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &)
+    :Effect()
 {
     connect(effects, &EffectsHandler::windowAdded, this, &SwitchWindowEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &SwitchWindowEffect::onWindowDeleted);
@@ -70,7 +69,7 @@ void SwitchWindowEffect::prePaintScreen(ScreenPrePaintData &data, int time)
         }
     }
     // this makes blurred windows work, should we need it ?
-    for (auto const& w: effects->stackingOrder()) {
+    for (const auto &w: effects->stackingOrder()) {
         w->setData(WindowForceBlurRole, QVariant(true));
     }
     effects->prePaintScreen(data, time);
@@ -78,14 +77,15 @@ void SwitchWindowEffect::prePaintScreen(ScreenPrePaintData &data, int time)
 
 void SwitchWindowEffect::postPaintScreen()
 {
-    if ((m_activated && m_animationTimeline.running() || m_withmoving))
+    if ((m_activated && m_animationTimeline.running() || m_withmoving)) {
         effects->addRepaintFull();
+    }
 
     if (m_activated && m_animationTimeline.done()) {
         setActive(false);
     }
 
-    for (auto const& w: effects->stackingOrder()) {
+    for (const auto &w: effects->stackingOrder()) {
         w->setData(WindowForceBlurRole, QVariant());
     }
 
@@ -117,18 +117,16 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
         effects->paintWindow(w, mask, region, data);
         return;
     }
-    if (m_moving || m_withmoving || w->isDesktop()) {
-        auto area = effects->clientArea(ScreenArea, 0, 0);
-        WindowPaintData d = data;
-        if (w->isDesktop()) {
-            d.setBrightness(0.4);
-            effects->paintWindow(w, mask, area, d);
 
+    if (m_moving || m_withmoving || w->isDesktop()) {
+        if (w->isDesktop()) {
+            data.setBrightness(0.4);
         } else if (!w->isDesktop()) {
+            //calculate the translation matrix of the window
             if (m_withmoving) {
                 if (m_preEffectWindow) {
                     if (w == m_currentEffectWindow) {
-                        data.translate(m_currentPos,0);
+                        data.translate(m_currentPos, 0);
                     } else if (w == m_preEffectWindow) {
                         data.translate(w->width() * -1 + m_currentPos - SwitchConsts::SWITCH_SPACE, 0);
                     } else if (m_movingEffectWindows.indexOf(w) != -1) {
@@ -136,9 +134,9 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                     }
                 }  else if (m_nextEffectWindow) {
                     if (w == m_currentEffectWindow) {
-                        data.translate(m_currentPos - w->width(),0); // -(w - pos) left;
+                        data.translate(m_currentPos - w->width(), 0);
                     } else if (w == m_nextEffectWindow) {
-                        data.translate(m_currentPos + SwitchConsts::SWITCH_SPACE,0);
+                        data.translate(m_currentPos + SwitchConsts::SWITCH_SPACE, 0);
                     } else if (m_movingEffectWindows.indexOf(w) != -1) {
                         data.translate(w->geometry().width() * -1, 0);
                     }
@@ -204,11 +202,13 @@ bool SwitchWindowEffect::isActive() const
 
 void SwitchWindowEffect::setActive(bool active)
 {
-    if (effects->activeFullScreenEffect() && effects->activeFullScreenEffect() != this)
+    if (effects->activeFullScreenEffect() && effects->activeFullScreenEffect() != this) {
         return;
+    }
 
-    if (m_activated == active)
+    if (m_activated == active) {
         return;
+    }
 
     if (active && !m_currentEffectWindow) {
         //windows on the desktop are minimized, so return
@@ -320,8 +320,10 @@ void SwitchWindowEffect::reboundToCurrentWindow()
 
 void SwitchWindowEffect::onWindowAdded(EffectWindow *w)
 {
-    if (!isRelevantWithPresentWindows(w))
+    if (!isRelevantWithPresentWindows(w)) {
         return; // don't add
+    }
+
     m_currentEffectWindow = w;
     m_movingEffectWindows.append(w);
 }
@@ -408,7 +410,7 @@ EffectWindow *SwitchWindowEffect::getNextWindow() const
 
 EffectWindow *SwitchWindowEffect::getPreWindow() const
 {
-    if (m_currentEffectWindow){
+    if (m_currentEffectWindow) {
         if (m_currentEffectWindow == m_movingEffectWindows.first() || m_movingEffectWindows.size() <= 1) {
             return nullptr;//do not switch, have not pre window
         }

@@ -56,10 +56,14 @@ public Q_SLOTS:
     void toggleActive()  {
         setActive(!m_activated);
     }
+    //switch to the previous window
     void moveToPreWindow();
+    //switch to the next window
     void moveToNextWindow();
-    //follow the gesture
+
+    //follow the gesture to switch to the previous window
     void movingToPreWindow(int x);
+    //follow the gesture to switch to the next window
     void movingToNextWindow(int x);
     //spring to currentwindow
     void reboundToCurrentWindow();
