@@ -21,8 +21,8 @@
 
 #include "open-window.h"
 
-OpenWindowEffect::OpenWindowEffect(QObject *, const QVariantList &):
-    Effect()
+OpenWindowEffect::OpenWindowEffect(QObject *, const QVariantList &)
+    :Effect()
 {
     reconfigure(ReconfigureAll);
     connect(effects, SIGNAL(windowDeleted(KWin::EffectWindow*)), this, SLOT(slotWindowDeleted(KWin::EffectWindow*)));
@@ -81,10 +81,24 @@ void OpenWindowEffect::paintWindow(EffectWindow* w, int mask, QRegion region, Wi
 {
     auto animationIt = m_animations.constFind(w);
     if (animationIt != m_animations.constEnd()) {
-        qreal scale = 1.0 - animationIt->value();
-        data.setOpacity(scale);
-        data.setScale(QVector2D((float)scale, (float)scale));
-        data.translate(w->geometry().width() * 0.5 * (1.0 - scale), w->geometry().height() * 0.5 * (1.0 - scale));
+        qreal coef = animationIt->value();
+        if(m_showWindow && w == m_showWindow) {
+            int screenwidth = effects->virtualScreenSize().width();
+            int scrrenheight = effects->virtualScreenSize().height();
+
+            qreal width = m_showWindowRect.width()+ (screenwidth - m_showWindowRect.width()) * coef;
+            qreal height = m_showWindowRect.height()+ (scrrenheight - m_showWindowRect.height()) * coef;
+            qreal x = m_showWindowRect.x() + (0 - m_showWindowRect.x()) * coef;
+            qreal y = m_showWindowRect.y() + (0 - m_showWindowRect.y()) * coef;
+
+            data += QPoint(qRound(x - (float)w->x()), qRound(y - w->y()));
+            data.setScale(QVector2D(width / w->width(), (float)height / w->height()));
+        } else {
+            data.setOpacity(coef);
+            data.setScale(QVector2D((float)coef, (float)coef));
+            data.translate(w->geometry().width() * 0.5 * (1.0 - coef), w->geometry().height() * 0.5 * (1.0 - coef));
+        }
+
     }
     // Call the next effect.
     effects->paintWindow(w, mask, region, data);
@@ -96,6 +110,9 @@ void OpenWindowEffect::postPaintScreen()
     while (animationIt != m_animations.end()) {
         if ((*animationIt).done()) {
             animationIt = m_animations.erase(animationIt);
+            if(m_showWindow) {
+                m_showWindow = nullptr;
+            }
         } else {
             ++animationIt;
         }
@@ -114,30 +131,91 @@ void OpenWindowEffect::slotWindowDeleted(EffectWindow* w)
 
 void OpenWindowEffect::slotWindowAdded(EffectWindow *w)
 {
-    if (effects->activeFullScreenEffect())
-        return;
-    if (w->isDeleted() || w->isDock() || w->isSpecialWindow() || w->isUtility() || !w->acceptsFocus() || !w->isCurrentTab() || !w->isOnCurrentActivity())
-    {
+    if (effects->activeFullScreenEffect()) {
         return;
     }
+
+    if (!isRelevantWithPresentWindows(w)) {
+        return; // don't add
+    }
+
     TimeLine &timeLine = m_animations[w];
 
-    if (timeLine.running())
-    {
+    if (timeLine.running()) {
         timeLine.toggleDirection();
-    }
-    else
-    {
-        timeLine.setDirection(TimeLine::Backward);
+    } else {
+        timeLine.setDirection(TimeLine::Forward);
         timeLine.setDuration(m_duration);
-        timeLine.setEasingCurve(QEasingCurve::Linear);
+        timeLine.setEasingCurve(QEasingCurve::OutExpo);
     }
 
     effects->addRepaintFull();
 }
 
+bool OpenWindowEffect::isRelevantWithPresentWindows(EffectWindow *w) const
+{
+    if (w->isSpecialWindow() || w->isUtility()) {
+        return false;
+    }
+
+    if (w->isDock()) {
+        return false;
+    }
+
+    if (w->isSkipSwitcher()) {
+        return false;
+    }
+
+    if (w->isDeleted()) {
+        return false;
+    }
+
+    if (!w->acceptsFocus()) {
+        return false;
+    }
+
+    if (!w->isCurrentTab()) {
+        return false;
+    }
+
+    if (!w->isOnCurrentActivity()) {
+        return false;
+    }
+
+    return true;
+}
+
 bool OpenWindowEffect::isActive() const
 {
     return !m_animations.isEmpty();
+}
+
+void OpenWindowEffect::showWindow(int winId, int ox, int oy, int width, int height)
+{
+    if (effects->activeFullScreenEffect()) {
+        return;
+    }
+
+    m_showWindow = effects->findWindow(winId);
+    if(!m_showWindow) {
+        return;
+    }
+
+    if (!isRelevantWithPresentWindows(m_showWindow)) {
+        return; // don't add
+    }
+
+    m_showWindowRect = QRect(ox, oy, width, height);
+    TimeLine &timeLine = m_animations[m_showWindow];
+
+    if (timeLine.running()) {
+        timeLine.toggleDirection();
+    } else {
+        timeLine.setDirection(TimeLine::Forward);
+        timeLine.setDuration(m_duration);
+        timeLine.setEasingCurve(QEasingCurve::OutExpo);
+    }
+    effects->activateWindow(m_showWindow);
+    effects->addRepaintFull();
 }
 

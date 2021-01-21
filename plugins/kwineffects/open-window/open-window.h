@@ -52,14 +52,19 @@ public:
     int requestedEffectChainPosition() const override {
         return 52;
     }
-
+public Q_SLOTS:
+    void showWindow(int winId, int ox, int oy, int width, int height);
 private slots:
     void slotWindowDeleted(KWin::EffectWindow *w);
     void slotWindowAdded(KWin::EffectWindow *w);
 private:
-     std::chrono::milliseconds m_duration;
+    bool isRelevantWithPresentWindows(EffectWindow *w) const;
+private:
+    EffectWindow *m_showWindow {nullptr};
+    QRect m_showWindowRect;
+    std::chrono::milliseconds m_duration;
      //support to opening multiple windows at the same time
-     QHash<const EffectWindow*, TimeLine> m_animations;
+    QHash<const EffectWindow *, TimeLine> m_animations;
 };
 
 #endif /* ifndef _DEEPIN_OPEN_WINDOW_H */
