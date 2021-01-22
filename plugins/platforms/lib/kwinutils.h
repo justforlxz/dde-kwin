@@ -67,6 +67,7 @@ public:
     static QObject *tabBox();
     static QObject *cursor();
     static QObject *virtualDesktop();
+    static QObject *getEffect(const QString &name);
 
     static QObjectList clientList();
     static QObjectList unmanagedList();

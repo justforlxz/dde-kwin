@@ -617,6 +617,11 @@ QObject *KWinUtils::virtualDesktop()
     return findObjectByClassName("KWin::VirtualDesktopManager", workspace()->children());
 }
 
+QObject *KWinUtils::getEffect(const QString &name)
+{
+    return KWin::getEffect(name);
+}
+
 namespace KWin {
 class Client : public QObject
 {

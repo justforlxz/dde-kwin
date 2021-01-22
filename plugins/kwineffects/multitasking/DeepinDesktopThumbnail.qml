@@ -199,7 +199,9 @@ Rectangle {
                     }
 
                     onClicked: {
-                        qmlRequestSwitchWindow(windowThumbnail.winId)
+                        var point = windowThumbnail.mapToItem(root, 0, 0);
+                        qmlRequestSwitchWindow(windowThumbnail.winId, point.x, point.y,
+                                               windowThumbnail.width, windowThumbnail.height)
                     }
                 }
             }

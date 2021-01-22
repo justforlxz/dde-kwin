@@ -16,7 +16,7 @@ Rectangle {
 
     //sent signal to c++
     signal qmlRequestCloseWindow(var window)
-    signal qmlRequestSwitchWindow(var window)
+    signal qmlRequestSwitchWindow(int winid, int ox, int oy, int width, int height)
     signal qmlCloseMultitask()
     signal closeMultiTask()
 

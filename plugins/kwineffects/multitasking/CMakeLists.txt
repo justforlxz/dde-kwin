@@ -98,6 +98,8 @@ set_source_files_properties(${TS}
 
 qt5_create_translation(QM ${SRCS} ${TS})
 
+include_directories(../../platforms/lib)
+
 add_library(
     ${PLUGIN_NAME} MODULE
     ${SRCS}
@@ -113,6 +115,7 @@ target_link_libraries(
     Qt5::Widgets
     Qt5::Quick
     Qt5::QuickWidgets
+    kwin-xcb
     PRIVATE
     KF5::ConfigCore
     KF5::CoreAddons

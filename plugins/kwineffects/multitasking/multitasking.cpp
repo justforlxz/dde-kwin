@@ -35,6 +35,7 @@
 #include "imageprovider.h"
 #include "backgroundimageprovider.h"
 #include "windowthumbnail.h"
+#include "kwinutils.h"
 
 #include "multitasking.h"
 #include "multitasking_model.h"
@@ -1250,7 +1251,7 @@ void MultitaskingEffect::setActive(bool active)
         auto root = m_multitaskingView->rootObject();
         root->setAcceptHoverEvents(true);
         connect(root, SIGNAL(qmlRequestCloseWindow(QVariant)), this, SLOT(onWindowClosed(QVariant)));
-        connect(root, SIGNAL(qmlRequestSwitchWindow(QVariant)), this, SLOT(onSwitchWindow(QVariant)));
+        connect(root, SIGNAL(qmlRequestSwitchWindow(int, int, int, int, int)), this, SLOT(onSwitchWindow(int, int, int, int, int)));
         connect(root, SIGNAL(qmlCloseMultitask()), this, SLOT(onQuitMultitask()));
 
         EffectWindowList windows = effects->stackingOrder();
@@ -1453,12 +1454,13 @@ void MultitaskingEffect::refreshWindows()
 //    }
 }
 
-void MultitaskingEffect::onSwitchWindow(QVariant winId)
+void MultitaskingEffect::onSwitchWindow(int winid, int ox, int oy, int w, int h)
 {
     toggleActive();
-    EffectWindow *effectWindow = effects->findWindow(winId.toULongLong());
-    if (effectWindow) {
-        effects->activateWindow(effectWindow);
+
+    QObject *openwindow = KWinUtils::getEffect("com.deepin.openwindow");
+    if(openwindow) {
+        QMetaObject::invokeMethod(openwindow, "showWindow", Qt::DirectConnection,Q_ARG(int, winid),Q_ARG(int, ox),Q_ARG(int, oy),Q_ARG(int, w),Q_ARG(int, h));
     }
 }
 

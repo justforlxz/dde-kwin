@@ -343,7 +343,7 @@ private slots:
     void remanageAll();
     void desktopRemoved(int d);
     void onQuitMultitask();
-    void onSwitchWindow(QVariant winId);
+    void onSwitchWindow(int winId, int ox, int oy, int width, int height);
     void removeEffectWindow(int screen, int desktop, QVariant winid);
 
     EffectWindow* multitaskingViewEffectWindow() {
