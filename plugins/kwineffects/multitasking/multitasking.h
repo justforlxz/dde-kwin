@@ -290,6 +290,10 @@ public Q_SLOTS:
     void toggleActive()  {
         setActive(!m_multitaskingViewVisible);
     }
+    //add by tanfang
+    void hidingWindow(int x, int y);
+    void exitHideingWindow(bool active);
+
     void globalShortcutChanged(QAction *action, const QKeySequence &seq);
     void onWindowAdded(KWin::EffectWindow*);
     void onWindowClosed(KWin::EffectWindow*);
@@ -463,12 +467,18 @@ private:
     //Touch Screen
     QDateTime m_currentDateTime;
 
-      //add by tanfang
+    //add by tanfang
     EffectWindow *m_showWindow {nullptr};
     QRect m_showWindowRect;
     std::chrono::milliseconds m_duration;
     //support to opening multiple windows at the same time
     QHash<const EffectWindow *, TimeLine> m_animations;
+    //hidden window add by tanfang
+    EffectWindow *m_hideWindow {nullptr};
+    int m_currentPosX {0};
+    int m_currentPosY {0};
+    int m_posX {0};
+    int m_posY {0};
 };
 
 

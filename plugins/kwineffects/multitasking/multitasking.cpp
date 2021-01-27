@@ -47,6 +47,9 @@ const QString dbusDeepinWmService = "com.deepin.wm";
 const QString dbusDeepinWmObj = "/com/deepin/wm";
 const QString dbusDeepinWmInif =  "com.deepin.wm";
 const QString dueLock = "due-shell";
+const qreal minimumScale = 0.2;
+const qreal minimumHeighCoef = 0.9;
+const qreal minimumTopSpace = 50;
 
 Q_LOGGING_CATEGORY(BLUR_CAT, "kwin.blur", QtCriticalMsg);
 
@@ -620,7 +623,7 @@ void MultitaskingEffect::postPaintScreen()
     while (animationIt != m_animations.end()) {
         if ((*animationIt).done()) {
             animationIt = m_animations.erase(animationIt);
-            if(m_showWindow) {
+            if (m_showWindow) {
                 m_showWindow = nullptr;
             }
         } else {
@@ -658,10 +661,44 @@ void MultitaskingEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &dat
 
 void MultitaskingEffect::paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data)
 {
+    if (w == m_hideWindow) {
+        auto area = effects->clientArea(ScreenArea, 0, 0);
+        int h = area.height();
+        int w = area.width();
+        int bottom = h - m_currentPosY;
+
+        qreal scoef = 0.0;
+        int top = minimumTopSpace;
+        if (m_currentPosY > h * 0.5) {
+            qreal coe = (float) m_currentPosY / (float)(h);
+            scoef = (float) m_currentPosY / (float)(h / coe);
+            top = bottom * scoef * coe;
+        }
+        else {
+            top = h * 0.5 - bottom;
+        }
+
+        if (top < minimumTopSpace) {
+            top = minimumTopSpace;
+        }
+        scoef = (float)(h - bottom - top) / (float)(h);
+
+        if (scoef < minimumScale) {
+            scoef = minimumScale;
+        }
+
+        data.setScale(QVector2D(scoef, scoef));
+
+        m_posX = (int)(w - scoef * w) * 0.5;
+        int offsetX = m_currentPosX - w * 0.5;
+        m_posY = top;
+        data.translate(m_posX + offsetX, m_posY);
+     }
+
     auto animationIt = m_animations.constFind(w);
     if (animationIt != m_animations.constEnd()) {
         qreal coef = animationIt->value();
-        if(m_showWindow && w == m_showWindow) {
+        if (m_showWindow && w == m_showWindow) {
             int screenwidth = effects->virtualScreenSize().width();
             int scrrenheight = effects->virtualScreenSize().height();
 
@@ -672,6 +709,14 @@ void MultitaskingEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
 
             data += QPoint(qRound(x - (float)w->x()), qRound(y - w->y()));
             data.setScale(QVector2D(width / w->width(), (float)height / w->height()));
+        } else if (w == m_hideWindow) {
+            int tx = m_posX + (w->geometry().width() * 0.5 - m_posX) * coef;
+            int ty = m_posY + (w->geometry().height() * 0.5 - m_posY) * coef;
+            data.translate(tx, ty);
+            int width = (w->geometry().width() * 0.5 - tx) * 2;
+            int height = (w->geometry().height() * 0.5 - ty) * 2;
+            data.setScale(QVector2D(width / w->width(), (float)height / w->height()));
+
         }
     }
     effects->paintWindow(w, mask, region, data);
@@ -1009,7 +1054,7 @@ void MultitaskingEffect::selectWindow(EffectWindow* w)
 
 bool MultitaskingEffect::isActive() const
 {
-    return (m_multitaskingViewVisible || !m_animations.isEmpty()) && !effects->isScreenLocked();
+    return (m_multitaskingViewVisible || !m_animations.isEmpty() || m_hideWindow) && !effects->isScreenLocked();
 }
 
 void MultitaskingEffect::cleanup()
@@ -1319,6 +1364,41 @@ void MultitaskingEffect::setActive(bool active)
     }
 }
 
+void MultitaskingEffect::exitHideingWindow(bool active)
+{
+    if (m_hideWindow) {
+        m_hideWindow->setMinimized(true);
+    }
+    m_hideWindow = nullptr;
+    m_posX = 0;
+    m_posY = 0;
+
+    if (active) {
+        setActive(true);
+    }
+}
+
+void MultitaskingEffect::hidingWindow(int x, int y)
+{
+    if (effects->activeFullScreenEffect()) {
+        return;
+    }
+
+    m_hideWindow = effects->activeWindow();
+
+    if (!m_hideWindow) {
+        return;
+    }
+
+    if (!isRelevantWithPresentWindows(m_hideWindow)) {
+        return; // don't add
+    }
+
+    m_currentPosX = x;
+    m_currentPosY = y;
+    effects->addRepaintFull();
+}
+
 void MultitaskingEffect::globalShortcutChanged(QAction *action, const QKeySequence &seq)
 {
     if (action->objectName() != actionName) {
@@ -1520,6 +1600,7 @@ void MultitaskingEffect::onSwitchWindow(int winid, int ox, int oy, int w, int h)
         timeLine.setDuration(m_duration);
         timeLine.setEasingCurve(QEasingCurve::OutExpo);
     }
+
     effects->activateWindow(m_showWindow);
 }
 
