@@ -573,6 +573,8 @@ void MultitaskingEffect::reconfigure(ReconfigureFlags)
     qCDebug(BLUR_CAT) << "-------------- " << __func__;
     m_toggleTimeline.setDuration(Constants::WORKSPACE_FADE_DURATION);
     m_toggleTimeline.setEasingCurve(Constants::TOGGLE_MODE);
+    const int d = 400;
+    m_duration = std::chrono::milliseconds(static_cast<int>(animationTime(d)));
 }
 
 // Screen painting
@@ -587,6 +589,13 @@ void MultitaskingEffect::prePaintScreen(ScreenPrePaintData &data, int time)
                 setMultitaskingViewEffectWindow(ew);
             }
         }
+    }
+    const std::chrono::milliseconds delta(time);
+
+    auto animationIt = m_animations.begin();
+    while (animationIt != m_animations.end()) {
+        (*animationIt).update(delta);
+           ++animationIt;
     }
     effects->prePaintScreen(data, time);
 }
@@ -605,6 +614,20 @@ void MultitaskingEffect::postPaintScreen()
     for (auto const& w: effects->stackingOrder()) { 
         w->setData(WindowForceBlurRole, QVariant()); 
     }
+
+    auto animationIt = m_animations.begin();
+    while (animationIt != m_animations.end()) {
+        if ((*animationIt).done()) {
+            animationIt = m_animations.erase(animationIt);
+            if(m_showWindow) {
+                m_showWindow = nullptr;
+            }
+        } else {
+            ++animationIt;
+        }
+    }
+
+    effects->addRepaintFull();
     effects->postPaintScreen();
 }
 
@@ -634,6 +657,22 @@ void MultitaskingEffect::prePaintWindow(EffectWindow *w, WindowPrePaintData &dat
 
 void MultitaskingEffect::paintWindow(EffectWindow *w, int mask, QRegion region, WindowPaintData &data)
 {
+    auto animationIt = m_animations.constFind(w);
+    if (animationIt != m_animations.constEnd()) {
+        qreal coef = animationIt->value();
+        if(m_showWindow && w == m_showWindow) {
+            int screenwidth = effects->virtualScreenSize().width();
+            int scrrenheight = effects->virtualScreenSize().height();
+
+            qreal width = m_showWindowRect.width() + (screenwidth - m_showWindowRect.width()) * coef;
+            qreal height = m_showWindowRect.height() + (scrrenheight - m_showWindowRect.height()) * coef;
+            qreal x = m_showWindowRect.x() + (0 - m_showWindowRect.x()) * coef;
+            qreal y = m_showWindowRect.y() + (0 - m_showWindowRect.y()) * coef;
+
+            data += QPoint(qRound(x - (float)w->x()), qRound(y - w->y()));
+            data.setScale(QVector2D(width / w->width(), (float)height / w->height()));
+        }
+    }
     effects->paintWindow(w, mask, region, data);
 }
 
@@ -969,7 +1008,7 @@ void MultitaskingEffect::selectWindow(EffectWindow* w)
 
 bool MultitaskingEffect::isActive() const
 {
-    return m_multitaskingViewVisible && !effects->isScreenLocked();
+    return (m_multitaskingViewVisible || !m_animations.isEmpty()) && !effects->isScreenLocked();
 }
 
 void MultitaskingEffect::cleanup()
@@ -1458,10 +1497,28 @@ void MultitaskingEffect::onSwitchWindow(int winid, int ox, int oy, int w, int h)
 {
     toggleActive();
 
-    QObject *openwindow = KWinUtils::getEffect("com.deepin.openwindow");
-    if(openwindow) {
-        QMetaObject::invokeMethod(openwindow, "showWindow", Qt::DirectConnection,Q_ARG(int, winid),Q_ARG(int, ox),Q_ARG(int, oy),Q_ARG(int, w),Q_ARG(int, h));
+    m_showWindow = effects->findWindow(winid);
+    if(!m_showWindow) {
+        return;
     }
+
+    if (!isRelevantWithPresentWindows(m_showWindow)) {
+        return; // don't add
+    }
+
+    effects->setShowingDesktop(true);
+
+    m_showWindowRect = QRect(ox, oy, w, h);
+    TimeLine &timeLine = m_animations[m_showWindow];
+
+    if (timeLine.running()) {
+        timeLine.toggleDirection();
+    } else {
+        timeLine.setDirection(TimeLine::Forward);
+        timeLine.setDuration(m_duration);
+        timeLine.setEasingCurve(QEasingCurve::OutExpo);
+    }
+    effects->activateWindow(m_showWindow);
 }
 
 void MultitaskingEffect::onQuitMultitask()

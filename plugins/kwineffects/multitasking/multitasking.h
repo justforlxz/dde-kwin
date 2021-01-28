@@ -462,6 +462,13 @@ private:
 
     //Touch Screen
     QDateTime m_currentDateTime;
+
+      //add by tanfang
+    EffectWindow *m_showWindow {nullptr};
+    QRect m_showWindowRect;
+    std::chrono::milliseconds m_duration;
+    //support to opening multiple windows at the same time
+    QHash<const EffectWindow *, TimeLine> m_animations;
 };
 
 
