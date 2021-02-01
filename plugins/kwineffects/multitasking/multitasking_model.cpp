@@ -55,6 +55,8 @@ QVariant MultitaskingModel::data(const QModelIndex &index, int role) const
         return m_windowInfoList.at(row).windowTitle();
     case WindowIconRole:
         return m_windowInfoList.at(row).windowIcon();
+    case WindowThumbnailImageRole:
+        return m_windowInfoList.at(row).windowThumbnailImage();
     default:
         break;
     }
@@ -68,6 +70,7 @@ QHash<int, QByteArray> MultitaskingModel::roleNames() const
     roles[WindowThumbnailRole] = "WindowThumbnailRole";
     roles[WindowTitleRole]     = "WindowTitleRole";
     roles[WindowIconRole]      = "WindowIconRole";
+    roles[WindowThumbnailImageRole] = "WindowThumbnailImageRole";
     return roles;
 }
 

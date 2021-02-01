@@ -89,6 +89,7 @@ set(SRCS
     main.qml
     DeepinWindowThumbnail.qml
     DeepinDesktopThumbnail.qml
+    windowthumbnailimageprovider.cpp
 )
 
 # translations

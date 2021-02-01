@@ -29,6 +29,7 @@ Rectangle {
     property alias winTitle: windowTitle.text
     property alias winIcon: windowIcon.source
     property alias winId: windowThumbnail.winId
+    property alias winImage: windowThumbnail.source
     color: "transparent"
 
     Column{
@@ -48,8 +49,9 @@ Rectangle {
         }
 
         Row {
-            PlasmaCore.WindowThumbnail {
+            Image {
                 id: windowThumbnail
+                property int winId: 0
                 width: root.width
                 height: root.height - windowIcon.height
             }

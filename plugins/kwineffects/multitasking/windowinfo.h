@@ -44,6 +44,8 @@ public:
     void setWindowIcon(const QString &windowIcon);
     QString windowIcon() const;
 
+    QString windowThumbnailImage() const;
+
 signals:
     void windowIdChanged(QVariant winId);
     void windowTitleChanged(QString windowTitle);

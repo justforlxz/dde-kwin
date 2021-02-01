@@ -36,7 +36,8 @@ public:
     enum DataRoles{
         WindowThumbnailRole = Qt::UserRole + 1,
         WindowTitleRole     = Qt::UserRole + 2,
-        WindowIconRole      = Qt::UserRole + 3
+        WindowIconRole      = Qt::UserRole + 3,
+        WindowThumbnailImageRole = Qt::UserRole + 4
     };
 
     explicit MultitaskingModel(QObject *parent = nullptr);

@@ -82,6 +82,8 @@ Rectangle {
                 winId: WindowThumbnailRole
                 winTitle: WindowTitleRole
                 winIcon: WindowIconRole
+                winImage: WindowThumbnailImageRole
+
                 Component.onCompleted: {
                     windowThumbnail.state = "taskEnter"
                 }

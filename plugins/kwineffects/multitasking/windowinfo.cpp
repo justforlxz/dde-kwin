@@ -79,3 +79,8 @@ QString WindowInfo::windowIcon() const
 {
     return QString("image://imageProvider/%1").arg(m_windowId.toULongLong());
 }
+
+QString WindowInfo::windowThumbnailImage() const
+{
+    return QString("image://windowthumbnailimageprovider/%1").arg(m_windowId.toULongLong());
+}
