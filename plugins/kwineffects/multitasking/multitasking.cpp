@@ -22,6 +22,11 @@
 #include <QtCore>
 #include <QtDBus>
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <QtGui>
 #include <QMetaObject>
 #include <QtWidgets>
@@ -40,6 +45,14 @@
 
 #include "multitasking.h"
 #include "multitasking_model.h"
+
+#include <X11/X.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <QX11Info>
+
+#define StatusBarType "dde-polkit-agent"
 
 const QString actionName = "ShowMultitasking";
 
@@ -1356,7 +1369,7 @@ void MultitaskingEffect::setActive(bool active)
         m_hasKeyboardGrab = false;
         effects->stopMouseInterception(this);
     }
-    
+    toggleActiveStatusBar(active);
     m_multitaskingView->setVisible(m_multitaskingViewVisible);
     if (m_multitaskingViewVisible) {
         // set nullptr to avoid confusing prepaintscreen check
@@ -1616,4 +1629,96 @@ void MultitaskingEffect::removeEffectWindow(int screen, int desktop, QVariant wi
     }
     auto* ew = effects->findWindow(winid.toULongLong());
     ew->closeWindow();
+}
+
+void MultitaskingEffect::toggleActiveStatusBar(bool active)
+{
+    xcb_connection_t *c = QX11Info::connection();
+    Display *pDisplay = XOpenDisplay(nullptr);
+    QVector<WId> topLevelWindows = this->getWindowProperty<WId>(
+                XDefaultRootWindow(pDisplay), "_NET_CLIENT_LIST", XA_WINDOW);
+    auto setupMinimizeWindowConnection = [this, active, c] (WId wid) {
+        QString strClassName = getWindowClassName(wid);
+        if  (strClassName == StatusBarType) {
+            EffectWindow *window = effects->findWindow(wid);
+            if(!window) {
+                return;
+            }
+            if (active) {
+                if (!window->isMinimized()) {
+                    window->setMinimized(true);
+                }
+            } else {
+                effects->setShowingDesktop(false);
+                if (window->isMinimized()) {
+                    window->setMinimized(false);
+                } else {
+                    window->setMinimized(true);
+                }
+            }
+        }
+    };
+
+    std::for_each(topLevelWindows.begin(), topLevelWindows.end(), setupMinimizeWindowConnection);
+}
+
+QString MultitaskingEffect::getWindowClassName(WId wid)
+{
+    QString strClassName;
+    Display *pDisplay = XOpenDisplay(nullptr);
+    XClassHint *pClassHint = XAllocClassHint();
+    int status = XGetClassHint(pDisplay, wid, pClassHint);
+
+    if (status == 0) {
+        return strClassName;
+    }
+
+    if (pClassHint->res_class != nullptr) {
+        strClassName = QString(pClassHint->res_class);
+        XFree(pClassHint->res_class);
+    }
+
+    if (pClassHint->res_name != nullptr) {
+        XFree(pClassHint->res_name);
+    }
+
+    XFree(pClassHint);
+    return strClassName;
+}
+
+template <typename T>
+QVector<T> MultitaskingEffect::getWindowProperty(WId wid, const std::string &atomName, Atom atomType) const
+{
+    Display *pDisplay = XOpenDisplay(nullptr);
+    QVector<T> propertiesVector;
+
+    Atom atom = XInternAtom(pDisplay, atomName.c_str(), True);
+    if (atom == None) {
+        return propertiesVector;
+    }
+
+    long offset = 0;        // NOLINT
+    long offsetSize = 100;  // NOLINT
+    Atom atomRet;
+    int size;
+    unsigned long numItems;          // NOLINT
+    unsigned long bytesAfterReturn;  // NOLINT
+    unsigned char *ret;
+    int status;
+
+    do {
+        status = XGetWindowProperty(pDisplay, wid, atom, offset, offsetSize,
+                                    False, atomType, &atomRet, &size, &numItems,
+                                    &bytesAfterReturn, &ret);
+        if (status == Success) {
+            auto properties = reinterpret_cast<T *>(ret);  // NOLINT
+            for (int i = 0; i < numItems; i++) {
+                propertiesVector.push_back(properties[i]);
+            }
+            XFree(ret);
+            offset += offsetSize;
+        }
+    } while (status == Success && bytesAfterReturn != 0 && numItems != 0);
+
+    return propertiesVector;
 }
