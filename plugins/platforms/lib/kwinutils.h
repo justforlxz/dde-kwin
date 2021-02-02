@@ -160,6 +160,7 @@ public Q_SLOTS:
     void SuspendCompositor(int type);
     void TouchPadToMoveWindow(int x, int y);
     void EndTouchPadToMoveWindow();
+    void IsPadMode(bool &flag);
 
 Q_SIGNALS:
     void initialized();

@@ -334,7 +334,12 @@ void Chameleon::updateTitleGeometry()
 
     m_titleArea = titleBar();
 
-    m_title = client().data()->caption();
+    bool flag = false;
+    KWinUtils::instance()->IsPadMode(flag);
+    if (flag)
+        m_title.clear();
+    else
+        m_title = client().data()->caption();
     // 使用系统字体，不要使用 settings() 中的字体
     const QFontMetricsF fontMetrics(qGuiApp->font());
     int full_width = fontMetrics.width(m_title) * m_theme->windowPixelRatio();

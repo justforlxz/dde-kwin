@@ -34,6 +34,8 @@
 #include <QScreen>
 #include <QPainterPath>
 
+#include "kwinutils.h"
+
 class Settings;
 class ChameleonWindowTheme;
 class Chameleon : public KDecoration2::Decoration

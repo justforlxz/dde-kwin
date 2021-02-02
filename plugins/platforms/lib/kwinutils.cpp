@@ -90,6 +90,7 @@ public Q_SLOTS:
     bool compositing() const;
     void slotTouchPadTomoveWindow(int x, int y);
     void slotEndTouchPadToMoveWindow();
+    void slotIsPadMode(bool &flag);
 
 #if !defined(KWIN_VERSION) || KWIN_VERSION < KWIN_VERSION_CHECK(5, 10, 95, 0)
     // kwin < 5.10.95
@@ -1105,6 +1106,14 @@ void KWinUtils::EndTouchPadToMoveWindow()
     KWin::Workspace *ws = static_cast<KWin::Workspace *>(workspace());
     if (ws) {
         ws->slotEndTouchPadToMoveWindow();
+    }
+}
+
+void KWinUtils::IsPadMode(bool &flag)
+{
+    KWin::Workspace *ws = static_cast<KWin::Workspace *>(workspace());
+    if (ws) {
+        ws->slotIsPadMode(flag);
     }
 }
 
