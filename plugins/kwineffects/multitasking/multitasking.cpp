@@ -418,7 +418,7 @@ void MultitaskingEffect::onWindowClosed(KWin::EffectWindow* w)
     emit modeChanged();
 }
 
-void MultitaskingEffect::onWindowClosed(QVariant winId)
+void MultitaskingEffect::onWindowClosed(QVariant winId, int index)
 {
     bool ok = false;
     qulonglong windowId = winId.toULongLong(&ok);
@@ -432,7 +432,7 @@ void MultitaskingEffect::onWindowClosed(QVariant winId)
     }
 
     effectWindow->closeWindow();
-    m_multitaskingModel->closeWindow(winId);
+    m_multitaskingModel->closeWindow(index);
 }
 
 void MultitaskingEffect::onWindowDeleted(KWin::EffectWindow* w)
@@ -1338,7 +1338,7 @@ void MultitaskingEffect::setActive(bool active)
 
         auto root = m_multitaskingView->rootObject();
         root->setAcceptHoverEvents(true);
-        connect(root, SIGNAL(qmlRequestCloseWindow(QVariant)), this, SLOT(onWindowClosed(QVariant)));
+        connect(root, SIGNAL(qmlRequestCloseWindow(QVariant, int)), this, SLOT(onWindowClosed(QVariant, int)));
         connect(root, SIGNAL(qmlRequestSwitchWindow(int, int, int, int, int)), this, SLOT(onSwitchWindow(int, int, int, int, int)));
         connect(root, SIGNAL(qmlCloseMultitask()), this, SLOT(onQuitMultitask()));
 

@@ -47,7 +47,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
     void setWindowInfoList(const QList<WindowInfo> &windowInfoList);
-    void closeWindow(QVariant windowId);
+    void closeWindow(int index);
     Q_INVOKABLE int numScreens() const;
     Q_INVOKABLE QRect screenGeometry(int screen) const;
     Q_INVOKABLE int columnAt(int index) const;

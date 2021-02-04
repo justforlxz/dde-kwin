@@ -107,19 +107,11 @@ void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoLis
     emit endInsertRows();
 }
 
-void MultitaskingModel::closeWindow(QVariant windowId)
+void MultitaskingModel::closeWindow(int index)
 {
-    for (int index = 0; index < m_windowInfoList.length(); ++index) {
-        const WindowInfo &winInfo = m_windowInfoList.at(index);
-        if (winInfo.windowId() == windowId) {
-
-            beginRemoveRows(QModelIndex(), index, index);
-            m_windowInfoList.removeAt(index);
-            endRemoveRows();
-
-            return;
-        }
-    }
+    beginRemoveRows(QModelIndex(), index, index);
+    m_windowInfoList.removeAt(index);
+    endRemoveRows();
 }
 
 QPixmap MultitaskingModel::getWindowIcon( QVariant winId )

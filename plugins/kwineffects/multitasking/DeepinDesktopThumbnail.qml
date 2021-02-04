@@ -135,7 +135,7 @@ Rectangle {
                         easing.type: Easing.Linear
                     }
                     onStopped: {
-                        qmlRequestCloseWindow(windowThumbnail.winId)
+                        qmlRequestCloseWindow(windowThumbnail.winId, index)
                     }
                 }
 
