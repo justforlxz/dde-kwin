@@ -49,6 +49,10 @@ Rectangle {
                 return view.height * 0.5
         }
 
+        removeDisplaced: Transition {
+            NumberAnimation { properties: "x, y"; duration: 600; easing.type: Easing.Linear }
+        }
+
         MouseArea {
             anchors.fill: parent
             z: -1
@@ -72,6 +76,8 @@ Rectangle {
 
         delegate: Item {
             id: item
+            width: view.cellWidth
+            height: view.cellHeight
             anchors.margins: 10
             property bool taskEnter: true
             property int column: view.model.columnAt(index)
@@ -188,13 +194,10 @@ Rectangle {
                     onPressed: {
                         clickPos = Qt.point(mouse.x, mouse.y)
                     }
-                    onPositionChanged: {
-                        var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
-                        var y = windowThumbnail.y
-                        windowThumbnail.y = y + delta.y
-                    }
+
                     onReleased: {
-                        if (windowThumbnail.y < -(view.cellHeight * 0.25))
+                        var delta = windowThumbnail.y + (mouse.y - clickPos.y)
+                        if (delta < -(view.cellHeight * 0.25))
                             windowThumbnail.goCloseAnimation()
                         else
                             windowThumbnail.goBackAnimation()
