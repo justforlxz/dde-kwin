@@ -34,7 +34,6 @@
 #include <QTimeLine>
 #include <kwineffects.h>
 #include <KF5/KWindowSystem/KWindowSystem>
-#include <X11/Xdefs.h>
 
 #include "background.h"
 #include "constants.h"
@@ -409,12 +408,6 @@ private:
 
     EffectFrame* createIconFor(EffectWindow*);
     void initWindowData(DataHash::iterator wd, EffectWindow* w);
-
-    void toggleActiveStatusBar(bool active);
-    QString getWindowClassName(WId wid);
-
-    template <typename T>
-    QVector<T> getWindowProperty(WId wid, const std::string &atomName, Atom atomType) const;
 
 private:
     DataHash m_windowDatas;

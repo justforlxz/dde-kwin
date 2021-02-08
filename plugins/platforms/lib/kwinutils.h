@@ -161,6 +161,7 @@ public Q_SLOTS:
     void TouchPadToMoveWindow(int x, int y);
     void EndTouchPadToMoveWindow();
     void IsPadMode(bool &flag);
+    void ToggleActiveWindow(bool isActive, QString strType);
 
 Q_SIGNALS:
     void initialized();
