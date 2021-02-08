@@ -711,14 +711,6 @@ void MultitaskingEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
 
             data += QPoint(qRound(x - (float)w->x()), qRound(y - w->y()));
             data.setScale(QVector2D(width / w->width(), (float)height / w->height()));
-        } else if (w == m_hideWindow) {
-            int tx = m_posX + (w->geometry().width() * 0.5 - m_posX) * coef;
-            int ty = m_posY + (w->geometry().height() * 0.5 - m_posY) * coef;
-            data.translate(tx, ty);
-            int width = (w->geometry().width() * 0.5 - tx) * 2;
-            int height = (w->geometry().height() * 0.5 - ty) * 2;
-            data.setScale(QVector2D(width / w->width(), (float)height / w->height()));
-
         }
     }
     effects->paintWindow(w, mask, region, data);
