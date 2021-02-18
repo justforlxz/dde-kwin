@@ -80,6 +80,7 @@ Rectangle {
             height: view.cellHeight
             anchors.margins: 10
             property bool taskEnter: true
+            property bool pressAndHold: false
             property int column: view.model.columnAt(index)
             property int offScreenX: -(root.width + column * view.cellWidth)
 
@@ -149,6 +150,11 @@ Rectangle {
                     State {
                         name: "taskLeave"
                         PropertyChanges { target: windowThumbnail; x: offScreenX }
+                    },
+                    State {
+                        when: item.pressAndHold
+                        name: "enlargeSize"
+                        PropertyChanges { target: windowThumbnail; scale: 1.5 }
                     }
                 ]
 
@@ -166,6 +172,11 @@ Rectangle {
                                 qmlCloseMultitask()
                             }
                         }
+                    },
+                    Transition {
+                        to: "enlargeSize"
+                        reversible: true
+                        ScaleAnimator { target: windowThumbnail; duration: 400; easing.type: Easing.Linear }
                     }
                 ]
 
@@ -196,11 +207,16 @@ Rectangle {
                     }
 
                     onReleased: {
+                        item.pressAndHold = false;
                         var delta = windowThumbnail.y + (mouse.y - clickPos.y)
                         if (delta < -(view.cellHeight * 0.25))
                             windowThumbnail.goCloseAnimation()
                         else
                             windowThumbnail.goBackAnimation()
+                    }
+
+                    onPressAndHold: {
+                        item.pressAndHold = true;
                     }
 
                     onClicked: {
