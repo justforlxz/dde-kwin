@@ -32,55 +32,43 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <X11/Xlib.h>
+#include <X11/X.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
+#include <QX11Info>
+
 WindowThumbnailImageProvider::WindowThumbnailImageProvider(QQmlImageProviderBase::ImageType type, QQmlImageProviderBase::Flags flags)
     : QQuickImageProvider(type, flags)
 {
 
 }
 
-QPixmap WindowThumbnailImageProvider::requestPixmap(const QString &id, QSize *size, const QSize &requestedSize)
+QImage WindowThumbnailImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
     Q_UNUSED(size);
 
     bool ok = false;
     qulonglong winId = id.toULongLong(&ok);
     if (!ok) {
-        return QPixmap();
+        return QImage();
     }
 
     EffectWindow *window = effects->findWindow(winId);
-    if (window) {
-        QPixmap pixmap;
-        xcb_connection_t *pConnection = xcb_connect(NULL, NULL);
-        xcb_generic_error_t *pErr = NULL;
-        const xcb_setup_t *pSetup = xcb_get_setup(pConnection);
-        xcb_screen_iterator_t screenIter = xcb_setup_roots_iterator(pSetup);
-        xcb_screen_t *pScreen = screenIter.data;
-
-        xcb_composite_redirect_window(pConnection, winId, XCB_COMPOSITE_REDIRECT_AUTOMATIC);
-        int nHeight, nWidth, nDepth;
-
-        xcb_get_geometry_cookie_t getGeomeryCookie = xcb_get_geometry(pConnection, winId);
-        xcb_get_geometry_reply_t *getGeomeryReply = xcb_get_geometry_reply(pConnection, getGeomeryCookie, &pErr);
-        if (getGeomeryReply) {
-            nWidth = getGeomeryReply->width;
-            nHeight = getGeomeryReply->height;
-            nDepth = getGeomeryReply->depth;
-            free(getGeomeryReply);
-        }
-
-        xcb_pixmap_t windowPixmap = xcb_generate_id(pConnection);
-        xcb_composite_name_window_pixmap(pConnection, winId, windowPixmap);
-
-        xcb_get_image_cookie_t getImageCookie = xcb_get_image(pConnection, XCB_IMAGE_FORMAT_Z_PIXMAP, windowPixmap, 0, 0, nWidth, nHeight, (uint32_t)(~0UL));
-        xcb_get_image_reply_t *pGetImageReply = xcb_get_image_reply(pConnection, getImageCookie, &pErr);
-
-        QImage image(xcb_get_image_data(pGetImageReply), nWidth, nHeight, QImage::Format_ARGB32);
-        pixmap = QPixmap::fromImage(image.scaled(QSize(nWidth, nHeight), Qt::KeepAspectRatio));
-        free(pGetImageReply);
-
-        return pixmap;
+    if (!window) {
+        return QImage();
     }
 
-    return QPixmap();
+    const auto display = QX11Info::display();
+    Window unusedWindow;
+    int unusedInt;
+    unsigned unusedUint, width, height;
+
+    XGetGeometry(display, winId, &unusedWindow, &unusedInt, &unusedInt, &width, &height, &unusedUint, &unusedUint);
+    XImage *pImage = XGetImage(display, winId, 0, 0, width, height, AllPlanes, ZPixmap);
+
+    QImage image = QImage((const uchar *)(pImage->data), pImage->width, pImage->height, pImage->bytes_per_line, QImage::Format_RGB32);
+    image = image.convertToFormat(QImage::Format_ARGB32);
+
+    return image;
 }

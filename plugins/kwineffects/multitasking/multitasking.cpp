@@ -1304,7 +1304,7 @@ void MultitaskingEffect::setActive(bool active)
         if (!m_multitaskingView) {
             m_multitaskingView = new QQuickWidget;
             m_multitaskingView->engine()->addImageProvider(QLatin1String("imageProvider"), new ImageProvider(QQmlImageProviderBase::Pixmap));
-            m_multitaskingView->engine()->addImageProvider(QLatin1String("windowthumbnailimageprovider"), new WindowThumbnailImageProvider(QQmlImageProviderBase::Pixmap));
+            m_multitaskingView->engine()->addImageProvider(QLatin1String("windowthumbnailimageprovider"), new WindowThumbnailImageProvider(QQmlImageProviderBase::Image));
             m_multitaskingView->setAttribute(Qt::WA_TranslucentBackground, true);
             m_multitaskingView->setClearColor(Qt::transparent);
             QSurfaceFormat fmt = m_multitaskingView->format();
