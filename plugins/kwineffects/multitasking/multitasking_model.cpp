@@ -114,6 +114,18 @@ void MultitaskingModel::closeWindow(int index)
     endRemoveRows();
 }
 
+void MultitaskingModel::closeTransient(qulonglong wid)
+{
+    for (int index = 0; index < m_windowInfoList.length(); ++index) {
+            const WindowInfo &winInfo = m_windowInfoList.at(index);
+            if (winInfo.windowId() == wid) {
+                beginRemoveRows(QModelIndex(), index, index);
+                m_windowInfoList.removeAt(index);
+                endRemoveRows();
+            }
+        }
+}
+
 QPixmap MultitaskingModel::getWindowIcon( QVariant winId )
 {
     EffectWindow *ew = effects->findWindow(winId.toULongLong());

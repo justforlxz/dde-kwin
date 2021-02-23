@@ -48,6 +48,7 @@ public:
 
     void setWindowInfoList(const QList<WindowInfo> &windowInfoList);
     void closeWindow(int index);
+    void closeTransient(qulonglong wid);
     Q_INVOKABLE int numScreens() const;
     Q_INVOKABLE QRect screenGeometry(int screen) const;
     Q_INVOKABLE int columnAt(int index) const;
