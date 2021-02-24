@@ -41,7 +41,6 @@ public:
     void setWindowTitle(const QString &windowTitle);
     QString windowTitle() const;
 
-    void setWindowIcon(const QString &windowIcon);
     QString windowIcon() const;
 
     QString windowThumbnailImage() const;

@@ -59,7 +59,7 @@ QImage WindowThumbnailImageProvider::requestImage(const QString &id, QSize *size
         return QImage();
     }
 
-    const auto display = QX11Info::display();
+    const auto &display = QX11Info::display();
     Window unusedWindow;
     int unusedInt;
     unsigned unusedUint, width, height;

@@ -71,10 +71,6 @@ QString WindowInfo::windowTitle() const
     return m_windowTitle;
 }
 
-void WindowInfo::setWindowIcon(const QString &windowIcon)
-{
-}
-
 QString WindowInfo::windowIcon() const
 {
     return QString("image://imageProvider/%1").arg(m_windowId.toULongLong());

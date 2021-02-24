@@ -19,7 +19,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 import QtQuick 2.11
 import QtQuick.Window 2.11
 
@@ -60,18 +59,16 @@ Rectangle {
 
             onClicked: {
                 mouse.accepted = false
-                if (view.count > 0) {
+                if (view.count > 0)
                     closeMultiTask()
-                } else {
+                else
                     qmlCloseMultitask()
-                }
             }
         }
 
         onCountChanged: {
-            if (count === 0) {
+            if (count === 0)
                 qmlCloseMultitask()
-            }
         }
 
         delegate: Item {
@@ -96,12 +93,10 @@ Rectangle {
                 }
 
                 y: {
-                    if (view.count === 2) {
+                    if (view.count === 2)
                         return view.cellHeight * 0.4
-                    }
-                    else if (view.count === 1) {
+                    else if (view.count === 1)
                         return view.cellHeight * 0.1
-                    }
                     else
                         return view.cellHeight * 0.1
                 }
@@ -168,9 +163,8 @@ Rectangle {
                         XAnimator { target: windowThumbnail; duration: 500; easing.type: Easing.Linear }
 
                         onRunningChanged: {
-                            if(!running && index === 0 ) {
+                            if(!running && index === 0 )
                                 qmlCloseMultitask()
-                            }
                         }
                     },
                     Transition {
@@ -207,7 +201,7 @@ Rectangle {
                     }
 
                     onReleased: {
-                        item.pressAndHold = false;
+                        item.pressAndHold = false
                         var delta = windowThumbnail.y + (mouse.y - clickPos.y)
                         if (delta < -(view.cellHeight * 0.25))
                             windowThumbnail.goCloseAnimation()
@@ -216,11 +210,11 @@ Rectangle {
                     }
 
                     onPressAndHold: {
-                        item.pressAndHold = true;
+                        item.pressAndHold = true
                     }
 
                     onClicked: {
-                        var point = windowThumbnail.mapToItem(root, 0, 0);
+                        var point = windowThumbnail.mapToItem(root, 0, 0)
                         qmlRequestSwitchWindow(windowThumbnail.winId, point.x, point.y,
                                                windowThumbnail.width, windowThumbnail.height)
                     }

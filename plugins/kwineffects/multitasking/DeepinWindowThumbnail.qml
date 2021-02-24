@@ -22,7 +22,6 @@
 
 import QtQuick 2.11
 import QtQuick.Window 2.11
-import org.kde.plasma 2.0 as PlasmaCore
 
 Rectangle {
     id: root

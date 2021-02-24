@@ -101,10 +101,9 @@ int MultitaskingModel::columnAt(int index) const
 
 void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoList)
 {
-    int index = rowCount();
-    emit beginInsertRows(QModelIndex(), index, index);
+    emit beginResetModel();
     m_windowInfoList = windowInfoList;
-    emit endInsertRows();
+    emit endResetModel();
 }
 
 void MultitaskingModel::setDesktopId(WId id)
