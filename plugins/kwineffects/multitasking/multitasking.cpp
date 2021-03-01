@@ -51,7 +51,7 @@ const QString dbusDeepinWmInif =  "com.deepin.wm";
 const QString dueLock = "due-shell";
 const qreal minimumScale = 0.2;
 const qreal minimumHeighCoef = 0.9;
-const qreal minimumTopSpace = 50;
+const qreal minimumTopSpace = 20;
 
 Q_LOGGING_CATEGORY(BLUR_CAT, "kwin.blur", QtCriticalMsg);
 
@@ -677,14 +677,10 @@ void MultitaskingEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
 
         qreal scoef = 0.0;
         int top = minimumTopSpace;
-        if (m_currentPosY > h * 0.5) {
-            qreal coe = (float) m_currentPosY / (float)(h);
-            scoef = (float) m_currentPosY / (float)(h / coe);
-            top = bottom * scoef * coe;
-        }
-        else {
-            top = h * 0.5 - bottom;
-        }
+
+        qreal coe = (float) m_currentPosY / (float)(h);
+        scoef = (float) m_currentPosY / (float)(h / coe);
+        top = bottom * scoef * coe;
 
         if (top < minimumTopSpace) {
             top = minimumTopSpace;
