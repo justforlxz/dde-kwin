@@ -107,6 +107,11 @@ void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoLis
     emit endInsertRows();
 }
 
+void MultitaskingModel::setDesktopId(WId id)
+{
+    m_desktopId = id;
+}
+
 void MultitaskingModel::closeWindow(int index)
 {
     beginRemoveRows(QModelIndex(), index, index);
@@ -134,4 +139,9 @@ QPixmap MultitaskingModel::getWindowIcon( QVariant winId )
     }
 
     return QPixmap();
+}
+
+QString MultitaskingModel::desktopId()
+{
+    return QString("%1").arg(m_desktopId.toULongLong());
 }

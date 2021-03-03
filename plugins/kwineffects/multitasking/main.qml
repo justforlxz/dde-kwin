@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import org.kde.plasma 2.0 as PlasmaCore
 import QtQuick.Window 2.11
+import QtGraphicalEffects 1.0
 
 Rectangle {
     id: root
@@ -9,6 +10,19 @@ Rectangle {
     width: Screen.desktopAvailableWidth
     height: Screen.desktopAvailableHeight
     color: "transparent"
+    property var desktopId: multitaskingModel.desktopId();
+
+    Image {
+        id: blur
+        source: "image://BackgroundImageProvider/" + desktopId;
+        fillMode:Image.PreserveAspectFit
+    }
+
+    FastBlur {
+        anchors.fill: root
+        source: blur
+        radius: 70
+    }
 
     function log(msg) {
         manager.debugLog(msg)
@@ -25,5 +39,8 @@ Rectangle {
         model: multitaskingModel
         color: "transparent"
     }
+
+
 }
+
 

@@ -55,12 +55,16 @@ public:
 
     Q_INVOKABLE QPixmap getWindowIcon( QVariant winId );
     bool isCurrentScreensEmpty();
+    Q_INVOKABLE QString desktopId();
+
+    void setDesktopId(WId id);
 
 protected:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
     QList<WindowInfo> m_windowInfoList;
+    QVariant m_desktopId;
 };
 
 #endif // DATAMODEL_H

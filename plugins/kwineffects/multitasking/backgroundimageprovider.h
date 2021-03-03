@@ -9,7 +9,7 @@ class BackgroundImageProvider : public QQuickImageProvider
 public:
     BackgroundImageProvider(QQmlImageProviderBase::ImageType type, QQmlImageProviderBase::Flags flags = Flags());
 
-    virtual QPixmap requestPixmap(const QString &id, QSize *size, const QSize &requestedSize);
+    virtual QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
 
 private:
 

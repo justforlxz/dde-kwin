@@ -527,6 +527,9 @@ QList<WindowInfo> MultitaskingEffect::windowsFor()
 
             windowInfoList.append(windowInfo);
         }
+        else if (ew->isDesktop()) {
+            m_multitaskingModel->setDesktopId(findWId(ew));
+        }
     }
 
     return windowInfoList;
@@ -1299,6 +1302,7 @@ void MultitaskingEffect::setActive(bool active)
             m_multitaskingView = new QQuickWidget;
             m_multitaskingView->engine()->addImageProvider(QLatin1String("imageProvider"), new ImageProvider(QQmlImageProviderBase::Pixmap));
             m_multitaskingView->engine()->addImageProvider(QLatin1String("windowthumbnailimageprovider"), new WindowThumbnailImageProvider(QQmlImageProviderBase::Image));
+            m_multitaskingView->engine()->addImageProvider(QLatin1String("BackgroundImageProvider"), new BackgroundImageProvider(QQmlImageProviderBase::Image));
             m_multitaskingView->setAttribute(Qt::WA_TranslucentBackground, true);
             m_multitaskingView->setClearColor(Qt::transparent);
             QSurfaceFormat fmt = m_multitaskingView->format();
