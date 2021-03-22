@@ -89,6 +89,8 @@ private:
      bool m_moving {false};
      //follow the gesture
      bool m_withmoving {false};
+     bool m_withmovingpre {false};
+     bool m_withmovingnext {false};
      int m_currentPos {0};
 
      QList<EffectWindow *> m_movingEffectWindows;

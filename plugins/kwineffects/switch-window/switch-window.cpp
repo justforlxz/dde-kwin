@@ -142,6 +142,12 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                     } else if (m_movingEffectWindows.indexOf(w) != -1) {
                         data.translate(w->geometry().width() * -1, 0);
                     }
+                } else {
+                    if (w == m_currentEffectWindow && m_withmovingpre) {
+                        data.translate(m_currentPos, 0);
+                    } else if(w == m_currentEffectWindow && m_withmovingnext) {
+                        data.translate(m_currentPos - w->width(), 0);
+                    }
                 }
 
             } else if(m_moving) {
@@ -276,8 +282,8 @@ void SwitchWindowEffect::movingToPreWindow(int x)
 
     m_preEffectWindow = getPreWindow();
     if (m_preEffectWindow == nullptr) {
-        setActive(false);//close paint
-        return;
+        m_withmovingpre = true;
+        m_withmovingnext = false;
     }
 
     m_withmoving = true;
@@ -294,8 +300,8 @@ void SwitchWindowEffect::movingToNextWindow(int x)
 
     m_nextEffectWindow = getNextWindow();
     if (m_nextEffectWindow == nullptr) {
-        setActive(false);//close paint
-        return;
+        m_withmovingnext = true;
+        m_withmovingpre = false;
     }
 
     m_withmoving = true;
@@ -312,6 +318,8 @@ void SwitchWindowEffect::reboundToCurrentWindow()
 
     if (m_withmoving) {
         m_withmoving = false;
+        m_withmovingpre = false;
+        m_withmovingnext = false;
         m_currentPos = 0;
         m_preEffectWindow = nullptr;
         m_nextEffectWindow = nullptr;
