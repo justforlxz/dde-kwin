@@ -1366,16 +1366,9 @@ void MultitaskingEffect::setActive(bool active)
 
 void MultitaskingEffect::exitHideingWindow(bool active)
 {
-    if (m_hideWindow) {
-        m_hideWindow->setMinimized(true);
-    }
     m_hideWindow = nullptr;
     m_posX = 0;
     m_posY = 0;
-
-    if (active) {
-        setActive(true);
-    }
 }
 
 void MultitaskingEffect::hidingWindow(int x, int y)
