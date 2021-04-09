@@ -46,6 +46,7 @@ SwitchWindowEffect::~SwitchWindowEffect()
 
 bool SwitchWindowEffect::supported()
 {
+    return true;
     bool supported = effects->isOpenGLCompositing() && effects->animationsSupported();
     return supported;
 }
