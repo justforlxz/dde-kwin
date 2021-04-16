@@ -24,6 +24,8 @@ import QtQuick.Window 2.11
 
 Rectangle {
     property alias model: view.model
+    property int pressX : 0
+    property int pressY : 0
 
     GridView {
         id: view
@@ -57,12 +59,18 @@ Rectangle {
             z: -1
             propagateComposedEvents: true
 
-            onClicked: {
-                mouse.accepted = false
-                if (view.count > 0)
-                    closeMultiTask()
-                else
-                    qmlCloseMultitask()
+            onPressed: {
+                pressX = mouseX
+                pressY = mouseY
+            }
+
+            onReleased: {
+                if (Math.abs(pressX - mouseX) <= 10 && Math.abs(pressY - mouseY) <= 10) {
+                    if (view.count > 0)
+                        closeMultiTask()
+                    else
+                        qmlCloseMultitask()
+                }
             }
         }
 
