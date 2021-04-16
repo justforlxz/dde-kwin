@@ -160,6 +160,22 @@ KWin::EffectWindow *Chameleon::effect() const
 
 bool Chameleon::noTitleBar() const
 {
+    bool flag = false;
+    KWinUtils::instance()->IsPadMode(flag);
+    if (flag) {
+        const QByteArray &data = KWinUtils::instance()->readWindowProperty(client().data()->windowId(), KWinUtils::internAtom("_NET_WM_WINDOW_TYPE", false), XCB_ATOM_ATOM);
+        QVector<xcb_atom_t> atom_list;
+        if (!data.isEmpty()) {
+            const xcb_atom_t *atoms = reinterpret_cast<const xcb_atom_t*>(data.constData());
+            for (int i = 0; i < data.size() / sizeof(xcb_atom_t) * sizeof(char); ++i) {
+                atom_list.append(atoms[i]);
+            }
+            xcb_atom_t _KDE_NET_WM_WINDOW_TYPE_DIALOG = KWinUtils::instance()->getXcbAtom("_NET_WM_WINDOW_TYPE_DIALOG", true);
+            if (!atom_list.contains(_KDE_NET_WM_WINDOW_TYPE_DIALOG))
+                return false;
+        }
+    }
+
     if (m_noTitleBar < 0) {
         // 需要初始化
         const QByteArray &data = KWinUtils::instance()->readWindowProperty(client().data()->windowId(),
