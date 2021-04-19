@@ -258,7 +258,12 @@ void UserActionsMenu::show(const QRect &pos, const QWeakPointer<AbstractClient> 
 #if WAYLAND_PLATFORM
     _globalWindowMenu->popup(pos.bottomLeft());
 #else
-    _globalWindowMenu->exec(pos.topLeft());
+    bool isPadModel = false;
+    KWinUtils::instance()->IsPadMode(isPadModel);
+    if (!isPadModel) {
+        _globalWindowMenu->exec(pos.topLeft());
+    }
+
     _menuClient = nullptr;
 #endif
 }
