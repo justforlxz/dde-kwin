@@ -53,6 +53,7 @@ Rectangle {
                 property int winId: 0
                 width: root.width
                 height: root.height - windowIcon.height
+                cache: false
             }
         }
     }
