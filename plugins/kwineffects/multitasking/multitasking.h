@@ -296,7 +296,7 @@ public Q_SLOTS:
 
     void globalShortcutChanged(QAction *action, const QKeySequence &seq);
     void onWindowAdded(KWin::EffectWindow*);
-    void onWindowClosed(KWin::EffectWindow*);
+    void onWindowClosedEx(KWin::EffectWindow*);
     void onWindowClosed(QVariant winId, int index);
     void onWindowDeleted(KWin::EffectWindow*);
     void onWindowActivated(KWin::EffectWindow*);

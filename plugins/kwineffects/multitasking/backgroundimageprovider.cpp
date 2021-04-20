@@ -39,7 +39,8 @@ QImage BackgroundImageProvider::requestImage(const QString &id, QSize *size, con
 
     XGetGeometry(display, winId, &unusedWindow, &unusedInt, &unusedInt, &width, &height, &unusedUint, &unusedUint);
     XImage *pImage = XGetImage(display, winId, 0, 0, width, height, AllPlanes, ZPixmap);
-
+    if (!pImage)
+        return QImage();
     QImage image = QImage((const uchar *)(pImage->data), pImage->width, pImage->height, pImage->bytes_per_line, QImage::Format_RGB32);
     image = image.convertToFormat(QImage::Format_ARGB32);
 

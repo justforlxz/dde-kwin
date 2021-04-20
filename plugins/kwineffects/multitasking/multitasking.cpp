@@ -281,6 +281,8 @@ MultitaskingEffect::MultitaskingEffect()
     connect(KGlobalAccel::self(), &KGlobalAccel::globalShortcutChanged, this, &MultitaskingEffect::globalShortcutChanged);
     connect(effects, &EffectsHandler::windowAdded, this, &MultitaskingEffect::onWindowAdded);
     connect(effects, &EffectsHandler::windowDeleted, this, &MultitaskingEffect::onWindowDeleted);
+    connect(effects, &EffectsHandler::windowClosed, this, &MultitaskingEffect::onWindowClosedEx);
+//    connect(effects, &EffectsHandler::windowClosed, this, &MultitaskingEffect::onWindowClosed);
     connect(effects, &EffectsHandler::windowActivated, this, &MultitaskingEffect::onWindowActivated);
     connect(effects, SIGNAL(closeEffect(bool)), this, SLOT(slotCloseEffect(bool)));
 
@@ -409,13 +411,23 @@ void MultitaskingEffect::onWindowAdded(KWin::EffectWindow* w)
     effects->addRepaintFull();
 }
 
-void MultitaskingEffect::onWindowClosed(KWin::EffectWindow* w)
+void MultitaskingEffect::onWindowClosedEx(KWin::EffectWindow* w)
 {
     if (!m_multitaskingViewVisible)
         return;
+    qCritical() << __FILE__ << __LINE__ << __FUNCTION__;
+//    if (w) {
+//        qCritical() << __FILE__ << __LINE__ << __FUNCTION__ << " caption ===== " << w->caption();
+//        WId id = findWId(w);
+//        qCritical() << __FILE__ << __LINE__ << __FUNCTION__ << " id = " << id;
+////        m_multitaskingModel->closeTransient(id);
+//    }
 
-    refreshWindows();
-    emit modeChanged();
+//    if (!w)
+//        qCritical() << " w is empty...........";
+//    m_multitaskingModel->closeWindow(m_index);
+//    refreshWindows();
+//    emit modeChanged();
 }
 
 void MultitaskingEffect::onWindowClosed(QVariant winId, int index)
@@ -431,14 +443,24 @@ void MultitaskingEffect::onWindowClosed(QVariant winId, int index)
         return;
     }
 
+    qCritical() << __FILE__ << __LINE__ << __FUNCTION__ << " id = " << windowId;
+
     QList<qulonglong> winList;
     KWinUtils::instance()->ChildWinList(windowId, winList);
-    effectWindow->closeWindow();
+
     m_multitaskingModel->closeWindow(index);
 
     for (int i = 0; i < winList.length(); i++) {
         m_multitaskingModel->closeTransient(winList[i]);
+        KWin::EffectWindow *effectWindowe = effects->findWindow(winList[i]);
+        if (!effectWindowe) {
+            continue;
+        }
+        qCritical() << __FILE__ << __LINE__ << __FUNCTION__ << " child id = " << winList[i];
+        effectWindowe->closeWindow();
+
     }
+    effectWindow->closeWindow();
 }
 
 void MultitaskingEffect::onWindowDeleted(KWin::EffectWindow* w)
@@ -1297,6 +1319,7 @@ void MultitaskingEffect::setActive(bool active)
 
         QList<WindowInfo> windowInfoList = windowsFor();
         m_multitaskingModel->setWindowInfoList(windowInfoList);
+        qCritical() << __FILE__ << __LINE__ << __FUNCTION__ << " list size = " << windowInfoList.size();
 
         if (!m_multitaskingView) {
             m_multitaskingView = new QQuickWidget;
@@ -1345,8 +1368,9 @@ void MultitaskingEffect::setActive(bool active)
         for (const auto &w: windows) {
             if (!isRelevantWithPresentWindows(w))
                 continue;
-            if (!w->isMinimized())
+            if (!w->isMinimized()) {
                 w->setMinimized(true);
+            }
         }
 
     } else {
