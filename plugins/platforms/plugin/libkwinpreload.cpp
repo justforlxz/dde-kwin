@@ -218,6 +218,10 @@ void UserActionsMenu::handleClick(const QPoint& pos)
 
 void UserActionsMenu::show(const QRect &pos, const QWeakPointer<AbstractClient> &cl)
 {
+    bool flag = false;
+    KWinUtils::instance()->IsPadMode(flag);
+    if (flag)
+        return;
 
     _menuClient = cl.data();
 
