@@ -183,4 +183,7 @@
     </method>
     <method name="ClearMoveStatus">
     </method>
+    <signal name="MultitaskingStatusChanged">
+        <arg type="b" name="status"/>
+    </signal>
 </interface>

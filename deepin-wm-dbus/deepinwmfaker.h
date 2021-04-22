@@ -140,6 +140,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void WorkspaceBackgroundChanged(int index, const QString &newUri);
     void WorkspaceBackgroundChangedForMonitor(int index, const QString &strMonitorName, const QString &newUri);
+    void MultitaskingStatusChanged(bool status);
 #ifndef DISABLE_DEEPIN_WM
     // 兼容deepin-wm提供的接口
     void WorkspaceSwitched(int from, int to);
