@@ -1286,7 +1286,8 @@ void MultitaskingEffect::setActive(bool active)
     m_multitaskingViewVisible = active;
 
     QDBusInterface wm(dbusDeepinWmService, dbusDeepinWmObj, dbusDeepinWmInif);
-    wm.call("SetMultiTaskingStatus", active);
+    wm.asyncCall("SetMultiTaskingStatus", active);
+    wm.asyncCall("MultitaskingStatusChanged", m_multitaskingViewVisible);
 
     if (m_multitaskingViewVisible) {
         if (m_targetDesktop != effects->currentDesktop()) {
