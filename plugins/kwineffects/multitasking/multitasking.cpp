@@ -1075,7 +1075,7 @@ void MultitaskingEffect::selectWindow(EffectWindow* w)
 
 bool MultitaskingEffect::isActive() const
 {
-    return (m_multitaskingViewVisible || !m_animations.isEmpty() || m_hideWindow) && !effects->isScreenLocked();
+    return (/*m_multitaskingViewVisible ||*/ !m_animations.isEmpty() || m_hideWindow) && !effects->isScreenLocked();
 }
 
 void MultitaskingEffect::cleanup()
@@ -1315,7 +1315,7 @@ void MultitaskingEffect::setActive(bool active)
             m_targetDesktop = effects->currentDesktop();
         }
 
-        effects->setShowingDesktop(true);
+//        effects->setShowingDesktop(true);
 
         QList<WindowInfo> windowInfoList = windowsFor();
         m_multitaskingModel->setWindowInfoList(windowInfoList);
