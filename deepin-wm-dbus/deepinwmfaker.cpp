@@ -1150,6 +1150,7 @@ bool DeepinWMFaker::GetMultiTaskingStatus()
 void DeepinWMFaker::SetMultiTaskingStatus(bool isActive)
 {
     m_isMultitaskingActived = isActive;
+    Q_EMIT MultitaskingStatusChanged(isActive);
 }
 
 bool DeepinWMFaker::GetIsShowDesktop()
