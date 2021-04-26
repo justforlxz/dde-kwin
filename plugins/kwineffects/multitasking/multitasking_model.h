@@ -20,8 +20,8 @@
  */
 
 
-#ifndef DATAMODEL_H
-#define DATAMODEL_H
+#ifndef MULTITASKING_MODEL_H 
+#define MULTITASKING_MODEL_H
 
 #include <KF5/KWindowSystem/KWindowSystem>
 #include <QAbstractListModel>
@@ -67,4 +67,4 @@ private:
     QVariant m_desktopId;
 };
 
-#endif // DATAMODEL_H
+#endif // MULTITASKING_MODEL_H
