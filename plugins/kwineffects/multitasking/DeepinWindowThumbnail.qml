@@ -43,7 +43,11 @@ Rectangle {
                 id: windowTitle
                 x: windowIcon.width
                 width: root.width - windowIcon.width
+                height: windowIcon.height
                 elide: Text.ElideRight
+                color: '#ffffff'
+                font.pixelSize: 29
+                verticalAlignment: Text.AlignVCenter
             }
         }
 
