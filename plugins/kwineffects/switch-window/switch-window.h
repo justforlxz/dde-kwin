@@ -73,6 +73,7 @@ private slots:
     void onWindowDeleted(KWin::EffectWindow *);
     void onWindowUnminimized(KWin::EffectWindow *);
     void onWindowMminimized(KWin::EffectWindow *);
+    void onWindowActivated(KWin::EffectWindow *);
 
 private:
     bool isRelevantWithPresentWindows(EffectWindow *w) const;

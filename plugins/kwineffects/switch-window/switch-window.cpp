@@ -35,6 +35,7 @@ SwitchWindowEffect::SwitchWindowEffect(QObject *, const QVariantList &)
     connect(effects, &EffectsHandler::windowDeleted, this, &SwitchWindowEffect::onWindowDeleted);
     connect(effects, &EffectsHandler::windowUnminimized, this, &SwitchWindowEffect::onWindowUnminimized);
     connect(effects, &EffectsHandler::windowMinimized, this, &SwitchWindowEffect::onWindowMminimized);
+    connect(effects, &EffectsHandler::windowActivated, this, &SwitchWindowEffect::onWindowActivated);
     // Load all other configuration details
     reconfigure(ReconfigureAll);
 }
@@ -215,7 +216,6 @@ void SwitchWindowEffect::setActive(bool active)
         //windows on the desktop are minimized, so return
         return;
     }
-
     if (m_activated && m_animationTimeline.running()) {
         // activate the animation again but it's not over yet.
         return;
@@ -335,16 +335,40 @@ void SwitchWindowEffect::onWindowDeleted(EffectWindow *w)
         m_movingEffectWindows.removeOne(w);
         m_currentEffectWindow = nullptr;
     }
+
+    EffectWindow *activeWindow = effects->activeWindow();
+    if (m_movingEffectWindows.contains(activeWindow)) {
+        m_currentEffectWindow = activeWindow;
+    }
 }
 
 void SwitchWindowEffect::onWindowUnminimized(EffectWindow *w)
 {
-    m_currentEffectWindow = w;
+    if (m_movingEffectWindows.contains(w)) {
+        m_currentEffectWindow = w;
+    }
 }
 
 void SwitchWindowEffect::onWindowMminimized(EffectWindow *w)
 {
-    m_currentEffectWindow = nullptr;
+    if (m_movingEffectWindows.contains(w)) {
+        m_currentEffectWindow = nullptr;
+        EffectWindow *activeWindow = effects->activeWindow();
+        if (m_movingEffectWindows.contains(activeWindow)) {
+            m_currentEffectWindow = activeWindow;
+        }
+    }
+}
+
+void SwitchWindowEffect::onWindowActivated(EffectWindow *w)
+{
+    if (nullptr == w) {
+        return;
+    }
+
+    if (m_movingEffectWindows.contains(w)) {
+        m_currentEffectWindow = w;
+    }
 }
 
 bool SwitchWindowEffect::isRelevantWithPresentWindows(EffectWindow *w) const
@@ -406,6 +430,7 @@ EffectWindow *SwitchWindowEffect::getNextWindow() const
         return w;
 
     }
+
     return nullptr;
 }
 
@@ -419,6 +444,7 @@ EffectWindow *SwitchWindowEffect::getPreWindow() const
         EffectWindow *w = m_movingEffectWindows[--cindex];//pre window
         return w;
     }
+
     return nullptr;
 }
 
