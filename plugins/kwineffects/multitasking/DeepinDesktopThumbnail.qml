@@ -157,7 +157,7 @@ Rectangle {
                     State {
                         when: item.pressAndHold
                         name: "enlargeSize"
-                        PropertyChanges { target: windowThumbnail; scale: 1.5 }
+                        PropertyChanges { target: windowThumbnail; scale: 1.05 }
                     }
                 ]
 
