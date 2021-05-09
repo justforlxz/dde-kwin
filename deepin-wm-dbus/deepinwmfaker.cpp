@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QDateTime>
 
 #include <KF5/KConfigCore/KConfig>
 #include <KF5/KConfigCore/KConfigGroup>
@@ -1161,4 +1162,11 @@ bool DeepinWMFaker::GetIsShowDesktop()
 void DeepinWMFaker::SetShowDesktop(bool isShowDesktop)
 {
     m_isShowDesktop = isShowDesktop;
+}
+
+void DeepinWMFaker::TouchToActiveStatusBar()
+{
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+    QString currentDate = currentDateTime.toString("hh:mm:ss.zzz");
+    Q_EMIT WakeUpStatusBar(currentDate);
 }
