@@ -26,28 +26,34 @@ Rectangle {
     property alias model: view.model
     property int pressX : 0
     property int pressY : 0
+    property int screenWidth : Screen.desktopAvailableWidth
+    property int screenHeight : Screen.desktopAvailableHeight
 
     GridView {
         id: view
         anchors.fill: parent
         layoutDirection : Qt.RightToLeft
         flow: GridView.FlowTopToBottom
+        anchors.leftMargin: {
+            if (count > 2)
+                return screenWidth * 0.08
+        }
 
         cellWidth: {
             if (count === 2)
-                return view.width * 0.47
+                return screenWidth * 0.47
             else if (count === 1)
-                return view.width * 0.8
+                return screenWidth * 0.8
             else
-                return view.width * 0.4
+                return screenWidth * 0.4
         }
         cellHeight: {
             if (count === 2)
-                return view.height * 0.6
+                return screenHeight * 0.6
             else if (count === 1)
-                return view.height * 0.9
+                return screenHeight * 0.9
             else
-                return view.height * 0.5
+                return screenHeight * 0.5
         }
 
         removeDisplaced: Transition {
