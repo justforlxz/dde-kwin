@@ -1076,10 +1076,7 @@ void MultitaskingEffect::cleanup()
     }
     m_windowDatas.clear();
 
-
-    if (m_hasKeyboardGrab) effects->ungrabKeyboard();
     m_hasKeyboardGrab = false;
-    effects->stopMouseInterception(this);
     effects->setActiveFullScreenEffect(0);
 
     while (m_motionManagers.size() > 0) {
@@ -1277,6 +1274,12 @@ bool MultitaskingEffect::isShowingMultitask()
     return m_multitaskingViewVisible;
 }
 
+void MultitaskingEffect::toggleActiveEx()
+{
+    m_multitaskingModel->bEnterEffect = false;
+    setActive(!m_multitaskingViewVisible);
+}
+
 void MultitaskingEffect::setActive(bool active)
 {
     if (!m_thumbManager) {
@@ -1326,11 +1329,8 @@ void MultitaskingEffect::setActive(bool active)
         }
         BackgroundManager::instance().setMonitorInfo(screenInfoLst);
 
-        m_thumbManager->setGeometry(effects->virtualScreenGeometry());
         m_multitaskingView->setSource(QUrl("qrc:/qml/main.qml"));
-        m_multitaskingView->setGeometry(effects->virtualScreenGeometry());
-        m_hasKeyboardGrab = effects->grabKeyboard(this);
-        effects->startMouseInterception(this, Qt::PointingHandCursor);
+        m_multitaskingView->move(0, 40);
 
         auto root = m_multitaskingView->rootObject();
         root->setAcceptHoverEvents(true);
@@ -1348,11 +1348,8 @@ void MultitaskingEffect::setActive(bool active)
         }
 
     } else {
-        if (m_hasKeyboardGrab) {
-            effects->ungrabKeyboard();
-        }
         m_hasKeyboardGrab = false;
-        effects->stopMouseInterception(this);
+        m_multitaskingModel->bEnterEffect = true;
     }
     KWinUtils::instance()->ToggleActiveWindow(active, StatusBarType);
     m_multitaskingView->setVisible(m_multitaskingViewVisible);

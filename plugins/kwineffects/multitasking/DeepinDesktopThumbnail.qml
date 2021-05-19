@@ -90,7 +90,7 @@ Rectangle {
             width: view.cellWidth
             height: view.cellHeight
             anchors.margins: 10
-            property bool taskEnter: true
+            property bool taskEnter: view.model.isEnterEffect()
             property bool pressAndHold: false
             property int column: view.model.columnAt(index)
             property int offScreenX: -(root.width + column * view.cellWidth)
@@ -103,7 +103,10 @@ Rectangle {
                 winImage: WindowThumbnailImageRole
 
                 Component.onCompleted: {
-                    windowThumbnail.state = "taskEnter"
+                    if (taskEnter)
+                        windowThumbnail.state = "taskEnter"
+                    else
+                        windowThumbnail.state = ""
                 }
 
                 y: {

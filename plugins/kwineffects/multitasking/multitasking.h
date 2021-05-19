@@ -290,6 +290,7 @@ public Q_SLOTS:
     void toggleActive()  {
         setActive(!m_multitaskingViewVisible);
     }
+    void toggleActiveEx();
     //add by tanfang
     void hidingWindow(int x, int y);
     void exitHideingWindow(bool active);

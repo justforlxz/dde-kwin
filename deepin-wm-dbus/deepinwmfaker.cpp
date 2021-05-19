@@ -14,6 +14,7 @@
 #include <KF5/KWindowSystem/KWindowSystem>
 #include <KF5/KWindowSystem/KWindowEffects>
 #include <KF5/KGlobalAccel/KGlobalAccel>
+#include <QDebug>
 
 #ifndef DISABLE_DEEPIN_WM
 #include <QGSettings>

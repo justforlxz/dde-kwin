@@ -99,6 +99,11 @@ int MultitaskingModel::columnAt(int index) const
     return index;
 }
 
+bool MultitaskingModel::isEnterEffect() const
+{
+    return bEnterEffect;
+}
+
 void MultitaskingModel::setWindowInfoList(const QList<WindowInfo> &windowInfoList)
 {
     emit beginResetModel();

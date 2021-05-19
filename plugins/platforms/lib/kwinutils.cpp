@@ -1197,7 +1197,7 @@ void KWinUtils::ShowWorkspacesView()
 {
     QObject *multitasking = KWin::getEffect("com.deepin.multitasking");
     if (multitasking) {
-        QMetaObject::invokeMethod(multitasking, "toggleActive");
+        QMetaObject::invokeMethod(multitasking, "toggleActiveEx");
     }
 }
 

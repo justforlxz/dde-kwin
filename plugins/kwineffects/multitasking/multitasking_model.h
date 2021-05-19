@@ -52,6 +52,7 @@ public:
     Q_INVOKABLE int numScreens() const;
     Q_INVOKABLE QRect screenGeometry(int screen) const;
     Q_INVOKABLE int columnAt(int index) const;
+    Q_INVOKABLE bool isEnterEffect() const;
 
     Q_INVOKABLE QPixmap getWindowIcon( QVariant winId );
     bool isCurrentScreensEmpty();
@@ -65,6 +66,9 @@ protected:
 private:
     QList<WindowInfo> m_windowInfoList;
     QVariant m_desktopId;
+
+public:
+    bool bEnterEffect {true};
 };
 
 #endif // DATAMODEL_H
