@@ -176,7 +176,7 @@ Rectangle {
                         XAnimator { target: windowThumbnail; duration: (800 + column * 100); easing.type: Easing.OutCubic }
                     },
                     Transition {
-                        from: "taskEnter"; to: "taskLeave"
+                        to: "taskLeave"
                         XAnimator { target: windowThumbnail; duration: 500; easing.type: Easing.Linear }
 
                         onRunningChanged: {
