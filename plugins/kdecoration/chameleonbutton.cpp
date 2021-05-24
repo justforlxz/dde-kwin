@@ -61,6 +61,10 @@ KDecoration2::DecorationButton *ChameleonButton::create(KDecoration2::Decoration
 void ChameleonButton::paint(QPainter *painter, const QRect &repaintRegion)
 {
     Q_UNUSED(repaintRegion)
+    bool flag = false;
+    KWinUtils::instance()->IsPadMode(flag);
+    if (flag)
+        return;
 
     Chameleon *decoration = qobject_cast<Chameleon*>(this->decoration());
 
