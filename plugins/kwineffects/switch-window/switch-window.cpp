@@ -145,8 +145,10 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                 } else {
                     if (w == m_currentEffectWindow && m_withmovingpre) {
                         data.translate(m_currentPos, 0);
-                    } else if(w == m_currentEffectWindow && m_withmovingnext) {
+                    } else if (w == m_currentEffectWindow && m_withmovingnext) {
                         data.translate(m_currentPos - w->width(), 0);
+                    } else {
+                        data.translate(w->geometry().width() * -1, 0);
                     }
                 }
 
@@ -200,8 +202,7 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
         }
     }
 
-    if ((!m_withmovingpre && !m_withmovingnext) || (w == m_currentEffectWindow || w->isDesktop()))
-        effects->paintWindow(w, mask, region, data);
+    effects->paintWindow(w, mask, region, data);
 }
 
 bool SwitchWindowEffect::isActive() const
@@ -282,10 +283,10 @@ void SwitchWindowEffect::movingToPreWindow(int x)
     }
 
     m_preEffectWindow = getPreWindow();
-    if (m_preEffectWindow == nullptr)
+    if (m_preEffectWindow == nullptr) {
         m_withmovingpre = true;
-
-    m_withmovingnext = false;
+        m_withmovingnext = false;
+    }
 
     m_withmoving = true;
     m_currentPos = x;
@@ -300,10 +301,10 @@ void SwitchWindowEffect::movingToNextWindow(int x)
     }
 
     m_nextEffectWindow = getNextWindow();
-    if (m_nextEffectWindow == nullptr)
+    if (m_nextEffectWindow == nullptr) {
         m_withmovingnext = true;
-
-    m_withmovingpre = false;
+        m_withmovingpre = false;
+    }
 
     m_withmoving = true;
     m_currentPos = x;
