@@ -433,12 +433,18 @@ void MultitaskingEffect::onWindowClosed(QVariant winId, int index)
 
     QList<qulonglong> winList;
     KWinUtils::instance()->ChildWinList(windowId, winList);
-    effectWindow->closeWindow();
+
     m_multitaskingModel->closeWindow(index);
 
     for (int i = 0; i < winList.length(); i++) {
+        KWin::EffectWindow *ceffectWindow = effects->findWindow(winList[i]);
+        if (!ceffectWindow) {
+            continue;
+        }
+        ceffectWindow->closeWindow();
         m_multitaskingModel->closeTransient(winList[i]);
     }
+    effectWindow->closeWindow();
 }
 
 void MultitaskingEffect::onWindowDeleted(KWin::EffectWindow* w)
