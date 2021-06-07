@@ -818,6 +818,11 @@ void DeepinWMFaker::ShowWorkspace()
     m_kwinUtilsInter->ShowWorkspacesView();
 }
 
+void DeepinWMFaker::CloseMenuTips()
+{
+    m_kwinUtilsInter->CloseMenuTipsWin();
+}
+
 void DeepinWMFaker::ShowSwitchWindow()
 {
     m_kwinUtilsInter->ShowSwitchWindowView();

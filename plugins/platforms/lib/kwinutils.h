@@ -163,6 +163,7 @@ public Q_SLOTS:
     void IsPadMode(bool &flag);
     void ChildWinList(qulonglong wid, QList<qulonglong>& lst);
     void ToggleActiveWindow(bool isActive, QString strType);
+    void CloseMenuTipsWin();
 
 Q_SIGNALS:
     void initialized();

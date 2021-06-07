@@ -93,6 +93,7 @@ public Q_SLOTS:
     void slotIsPadMode(bool &flag);
     void slotChildWinLst(qulonglong wid, QList<qulonglong>& lst);
     void slotToggleActiveWindow(bool isActive, QString strType);
+    void slotCloseMenuTips();
 
 #if !defined(KWIN_VERSION) || KWIN_VERSION < KWIN_VERSION_CHECK(5, 10, 95, 0)
     // kwin < 5.10.95
@@ -1116,6 +1117,14 @@ void KWinUtils::IsPadMode(bool &flag)
     KWin::Workspace *ws = static_cast<KWin::Workspace *>(workspace());
     if (ws) {
         ws->slotIsPadMode(flag);
+    }
+}
+
+void KWinUtils::CloseMenuTipsWin()
+{
+    KWin::Workspace *ws = static_cast<KWin::Workspace *>(workspace());
+    if (ws) {
+        ws->slotCloseMenuTips();
     }
 }
 

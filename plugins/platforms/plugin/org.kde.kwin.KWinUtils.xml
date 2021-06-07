@@ -30,4 +30,6 @@
     </method>
     <method name="EndTouchPadToMoveWindow">
     </method>
+    <method name="CloseMenuTipsWin">
+    </method>
 </interface>

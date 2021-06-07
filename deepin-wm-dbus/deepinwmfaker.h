@@ -121,6 +121,7 @@ public Q_SLOTS:
     void ShowWindow();
     void ShowWorkspace();
     void ShowSwitchWindow();
+    void CloseMenuTips();
 
     void setZoneEnabled(bool zoneEnabled);
 
