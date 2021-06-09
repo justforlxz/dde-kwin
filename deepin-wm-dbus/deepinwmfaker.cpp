@@ -1176,3 +1176,8 @@ void DeepinWMFaker::TouchToActiveStatusBar()
     QString currentDate = currentDateTime.toString("hh:mm:ss.zzz");
     Q_EMIT WakeUpStatusBar(currentDate);
 }
+
+void DeepinWMFaker::SpecialWinToStatusBar(int status)
+{
+    Q_EMIT NoticeStatusBar(status);
+}

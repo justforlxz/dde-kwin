@@ -140,6 +140,7 @@ public Q_SLOTS:
     void ClearMoveStatus();
 
     void TouchToActiveStatusBar();
+    void SpecialWinToStatusBar(int status);
 Q_SIGNALS:
     void WorkspaceBackgroundChanged(int index, const QString &newUri);
     void WorkspaceBackgroundChangedForMonitor(int index, const QString &strMonitorName, const QString &newUri);
@@ -159,6 +160,7 @@ Q_SIGNALS:
     void desktopStatusChanged();
 
     void WakeUpStatusBar(QString currentDate);
+    void NoticeStatusBar(int status);
 
 private:
     QAction *accelAction(const QString accelKid) const;
