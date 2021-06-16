@@ -109,6 +109,7 @@ Rectangle {
                         windowThumbnail.state = ""
                 }
 
+                x: 10
                 y: {
                     if (view.count === 2)
                         return view.cellHeight * 0.4
