@@ -1357,7 +1357,7 @@ void MultitaskingEffect::setActive(bool active)
         m_hasKeyboardGrab = false;
         m_multitaskingModel->bEnterEffect = true;
     }
-    KWinUtils::instance()->ToggleActiveWindow(active, StatusBarType);
+
     m_multitaskingView->setVisible(m_multitaskingViewVisible);
     if (m_multitaskingViewVisible) {
         // set nullptr to avoid confusing prepaintscreen check
