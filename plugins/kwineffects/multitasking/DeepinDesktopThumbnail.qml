@@ -126,6 +126,7 @@ Rectangle {
                     id: goBack
                     YAnimator {
                         target: windowThumbnail
+                        from: windowThumbnail.y
                         to: {
                             if (view.count === 2)
                                 return view.cellHeight * 0.4
@@ -134,8 +135,8 @@ Rectangle {
                             else
                                 return view.cellHeight * 0.1
                         }
-                        duration: 500
-                        easing.type: Easing.OutBounce
+                        duration: 400
+                        easing.type: Easing.easeOutExpo
                     }
                 }
 
@@ -213,6 +214,12 @@ Rectangle {
                     property point clickPos
                     drag.target: windowThumbnail
                     drag.axis: Drag.YAxis
+                    drag.maximumY: {
+                        if (view.count === 2)
+                            return view.cellHeight - width
+                        else
+                            return view.cellHeight - height
+                    }
 
                     onPressed: {
                         clickPos = Qt.point(mouse.x, mouse.y)
