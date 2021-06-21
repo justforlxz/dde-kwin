@@ -284,12 +284,14 @@ Q_SIGNALS:
     void modeChanged();
     void forceResetDesktopModel();
     void updateDesktopThumBackground();
+    void quitMultiEffect();
 
 public Q_SLOTS:
     void setActive(bool active);
     void toggleActive()  {
         setActive(!m_multitaskingViewVisible);
     }
+    void bringEffectActive();
     void toggleActiveEx();
     //add by tanfang
     void hidingWindow(int x, int y);

@@ -1286,6 +1286,14 @@ void MultitaskingEffect::toggleActiveEx()
     setActive(!m_multitaskingViewVisible);
 }
 
+void MultitaskingEffect::bringEffectActive()
+{
+    if (m_multitaskingViewVisible)
+        emit quitMultiEffect();
+    else
+        toggleActive();
+}
+
 void MultitaskingEffect::setActive(bool active)
 {
     if (!m_thumbManager) {
@@ -1343,6 +1351,7 @@ void MultitaskingEffect::setActive(bool active)
         connect(root, SIGNAL(qmlRequestCloseWindow(QVariant, int)), this, SLOT(onWindowClosed(QVariant, int)));
         connect(root, SIGNAL(qmlRequestSwitchWindow(int, int, int, int, int)), this, SLOT(onSwitchWindow(int, int, int, int, int)));
         connect(root, SIGNAL(qmlCloseMultitask()), this, SLOT(onQuitMultitask()));
+        connect(this, SIGNAL(quitMultiEffect()), root, SIGNAL(closeMultiTask()));
 
         EffectWindowList windows = effects->stackingOrder();
         EffectWindow *active_window = nullptr;
