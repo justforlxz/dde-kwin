@@ -99,6 +99,8 @@ Rectangle {
 			return view.cellWidth * 0.1
 	    }
 
+
+
             DeepinWindowThumbnail {
                 id: windowThumbnail
                 winId: WindowThumbnailRole

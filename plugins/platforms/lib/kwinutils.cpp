@@ -29,6 +29,7 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 #include <QAbstractNativeEventFilter>
+#include <QImage>
 
 // 为了访问 KWinEffects 的保护成员变量
 #define protected public
@@ -94,6 +95,7 @@ public Q_SLOTS:
     void slotChildWinLst(qulonglong wid, QList<qulonglong>& lst);
     void slotToggleActiveWindow(bool isActive, QString strType);
     void slotCloseMenuTips();
+    QImage slotGetWindowThumbnailImage(QString strId);
 
 #if !defined(KWIN_VERSION) || KWIN_VERSION < KWIN_VERSION_CHECK(5, 10, 95, 0)
     // kwin < 5.10.95
@@ -1118,6 +1120,15 @@ void KWinUtils::IsPadMode(bool &flag)
     if (ws) {
         ws->slotIsPadMode(flag);
     }
+}
+
+QImage KWinUtils::GetWindowThumbnailImage(QString id)
+{
+    KWin::Workspace *ws = static_cast<KWin::Workspace *>(workspace());
+    if (ws) {
+        return ws->slotGetWindowThumbnailImage(id);
+    }
+    return QImage();
 }
 
 void KWinUtils::CloseMenuTipsWin()

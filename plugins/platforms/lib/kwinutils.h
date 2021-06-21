@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QImage>
 
 #define KWIN_VERSION_CHECK(major, minor, patch, build) ((major<<24)|(minor<<16)|(patch<<8)|build)
 #ifdef KWIN_VERSION_STR
@@ -164,6 +165,7 @@ public Q_SLOTS:
     void ChildWinList(qulonglong wid, QList<qulonglong>& lst);
     void ToggleActiveWindow(bool isActive, QString strType);
     void CloseMenuTipsWin();
+    QImage GetWindowThumbnailImage(QString id);
 
 Q_SIGNALS:
     void initialized();
