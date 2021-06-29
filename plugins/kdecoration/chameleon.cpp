@@ -171,7 +171,8 @@ bool Chameleon::noTitleBar() const
                 atom_list.append(atoms[i]);
             }
             xcb_atom_t _KDE_NET_WM_WINDOW_TYPE_DIALOG = KWinUtils::instance()->getXcbAtom("_NET_WM_WINDOW_TYPE_DIALOG", true);
-            if (!atom_list.contains(_KDE_NET_WM_WINDOW_TYPE_DIALOG))
+            xcb_atom_t _KDE_NET_WM_WINDOW_TYPE_UTILITY = KWinUtils::instance()->getXcbAtom("_NET_WM_WINDOW_TYPE_UTILITY", true);
+            if (!atom_list.contains(_KDE_NET_WM_WINDOW_TYPE_DIALOG) && !atom_list.contains(_KDE_NET_WM_WINDOW_TYPE_UTILITY))
                 return false;
         }
     }
