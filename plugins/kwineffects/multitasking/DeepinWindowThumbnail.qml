@@ -32,6 +32,7 @@ Rectangle {
     color: "transparent"
 
     Column{
+        spacing: 20
         Row {
             Image {
                 id: windowIcon

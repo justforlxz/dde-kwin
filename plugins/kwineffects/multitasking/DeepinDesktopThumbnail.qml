@@ -116,7 +116,7 @@ Rectangle {
                     else if (view.count === 1)
                         return view.cellHeight * 0.1
                     else
-                        return view.cellHeight * 0.1
+                        return view.cellHeight * 0.03
                 }
 
                 width: view.cellWidth * 0.8
@@ -136,7 +136,7 @@ Rectangle {
                                 return view.cellHeight * 0.1
                         }
                         duration: 400
-                        easing.type: Easing.easeOutExpo
+                        easing.type: Easing.OutCubic
                     }
                 }
 
