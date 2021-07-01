@@ -1344,7 +1344,6 @@ void MultitaskingEffect::setActive(bool active)
         BackgroundManager::instance().setMonitorInfo(screenInfoLst);
 
         m_multitaskingView->setSource(QUrl("qrc:/qml/main.qml"));
-        m_multitaskingView->move(0, 40);
 
         auto root = m_multitaskingView->rootObject();
         root->setAcceptHoverEvents(true);
