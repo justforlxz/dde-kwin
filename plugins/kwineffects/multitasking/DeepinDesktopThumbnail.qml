@@ -31,13 +31,11 @@ Rectangle {
 
     GridView {
         id: view
-        anchors.fill: parent
+	anchors.centerIn: parent
+	width: screenWidth * 0.92
+	height: screenHeight
         layoutDirection : Qt.RightToLeft
         flow: GridView.FlowTopToBottom
-        anchors.leftMargin: {
-            if (count > 2)
-                return screenWidth * 0.08
-        }
 
         cellWidth: {
             if (count === 2)
@@ -94,6 +92,12 @@ Rectangle {
             property bool pressAndHold: false
             property int column: view.model.columnAt(index)
             property int offScreenX: -(root.width + column * view.cellWidth)
+	    property int inScreenX: {
+		if (view.count === 1)
+			return 10
+		else
+			return view.cellWidth * 0.1
+	    }
 
             DeepinWindowThumbnail {
                 id: windowThumbnail
@@ -109,7 +113,7 @@ Rectangle {
                         windowThumbnail.state = ""
                 }
 
-                x: 10
+                x: inScreenX
                 y: {
                     if (view.count === 2)
                         return view.cellHeight * 0.5
@@ -159,7 +163,7 @@ Rectangle {
                 states: [
                     State {
                         name: "taskEnter"
-                        PropertyChanges { target: windowThumbnail; x: 10 }
+                        PropertyChanges { target: windowThumbnail; x: inScreenX }
                     },
                     State {
                         name: "taskLeave"
