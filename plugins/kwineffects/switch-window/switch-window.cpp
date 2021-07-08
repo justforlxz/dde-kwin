@@ -144,9 +144,9 @@ void SwitchWindowEffect::paintWindow(EffectWindow *w, int mask, QRegion region, 
                     }
                 } else {
                     if (w == m_currentEffectWindow && m_withmovingpre) {
-                        data.translate(m_currentPos, 0);
+                        data.translate(m_currentPos > (w->width()/2) ? w->width()/2 : m_currentPos, 0);
                     } else if (w == m_currentEffectWindow && m_withmovingnext) {
-                        data.translate(m_currentPos - w->width(), 0);
+                        data.translate((m_currentPos - w->width()) < (-w->width()/2) ? -w->width()/2 : m_currentPos - w->width(), 0);
                     } else {
                         data.translate(w->geometry().width() * -1, 0);
                     }
