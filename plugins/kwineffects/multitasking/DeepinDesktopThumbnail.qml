@@ -49,11 +49,11 @@ Rectangle {
         }
         cellHeight: {
             if (count === 2)
-                return screenHeight * 0.6
+                return screenHeight * 0.47 + 70
             else if (count === 1)
-                return screenHeight * 0.9
+                return screenHeight * 0.8 + 70
             else
-                return screenHeight * 0.5
+                return screenHeight * 0.4 + 70
         }
 
         removeDisplaced: Transition {
@@ -112,11 +112,11 @@ Rectangle {
                 x: 10
                 y: {
                     if (view.count === 2)
-                        return view.cellHeight * 0.4
+                        return view.cellHeight * 0.5
                     else if (view.count === 1)
-                        return view.cellHeight * 0.1
+                        return view.cellHeight * 0.15
                     else
-                        return view.cellHeight * 0.03
+                        return view.cellHeight * 0.2
                 }
 
                 width: view.cellWidth * 0.8
@@ -129,11 +129,11 @@ Rectangle {
                         from: windowThumbnail.y
                         to: {
                             if (view.count === 2)
-                                return view.cellHeight * 0.4
+                                return view.cellHeight * 0.5
                             else if (view.count === 1)
-                                return view.cellHeight * 0.1
+                                return view.cellHeight * 0.15
                             else
-                                return view.cellHeight * 0.1
+                                return view.cellHeight * 0.2
                         }
                         duration: 400
                         easing.type: Easing.OutCubic
@@ -216,9 +216,9 @@ Rectangle {
                     drag.axis: Drag.YAxis
                     drag.maximumY: {
                         if (view.count === 2)
-                            return view.cellHeight - width
+                            return view.cellHeight * 2 / 3
                         else
-                            return view.cellHeight - height
+                            return view.cellHeight / 3
                     }
 
                     onPressed: {
