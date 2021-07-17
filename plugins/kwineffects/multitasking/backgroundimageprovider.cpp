@@ -16,7 +16,6 @@
 #include <X11/Xatom.h>
 #include <QX11Info>
 
-static XImage *pImage = nullptr;
 BackgroundImageProvider::BackgroundImageProvider(QQmlImageProviderBase::ImageType type, QQmlImageProviderBase::Flags flags)
     : QQuickImageProvider(type, flags)
 {
@@ -38,13 +37,12 @@ QImage BackgroundImageProvider::requestImage(const QString &id, QSize *size, con
     unsigned unusedUint, width, height;
 
     XGetGeometry(display, winId, &unusedWindow, &unusedInt, &unusedInt, &width, &height, &unusedUint, &unusedUint);
-    if (pImage == nullptr)
-    	pImage = XGetImage(display, winId, 0, 0, width, height, AllPlanes, ZPixmap);
-    else
-	pImage = XGetSubImage(display, winId, 0, 0, width, height, AllPlanes, ZPixmap, pImage, 0, 0);
+    XImage *pImage = XGetImage(display, winId, 0, 0, width, height, AllPlanes, ZPixmap);
 
     QImage image = QImage((const uchar *)(pImage->data), pImage->width, pImage->height, pImage->bytes_per_line, QImage::Format_RGB32);
     image = image.convertToFormat(QImage::Format_ARGB32);
+
+    XDestroyImage(pImage);
 
     return image;
 }
