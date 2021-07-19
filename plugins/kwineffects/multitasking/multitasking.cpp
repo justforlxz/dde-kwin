@@ -1375,6 +1375,8 @@ void MultitaskingEffect::setActive(bool active)
 
 void MultitaskingEffect::exitHideingWindow(bool active)
 {
+    effects->stopMouseInterception(this);
+
     m_hideWindow = nullptr;
     m_posX = 0;
     m_posY = 0;
@@ -1395,6 +1397,8 @@ void MultitaskingEffect::hidingWindow(int x, int y)
     if (!isRelevantWithPresentWindows(m_hideWindow)) {
         return; // don't add
     }
+
+    effects->startMouseInterception(this, Qt::PointingHandCursor);
 
     m_currentPosX = x;
     m_currentPosY = y;
