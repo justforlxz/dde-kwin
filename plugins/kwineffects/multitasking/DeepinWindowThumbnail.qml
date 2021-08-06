@@ -38,6 +38,7 @@ Rectangle {
                 id: windowIcon
                 width: 50
                 height: 50
+                cache: false
             }
 
             Text {
