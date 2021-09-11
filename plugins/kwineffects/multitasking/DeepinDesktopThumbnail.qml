@@ -218,6 +218,7 @@ Rectangle {
                 MouseArea {
                     anchors.fill: windowThumbnail
                     property point clickPos
+                    property var dateT
                     drag.target: windowThumbnail
                     drag.axis: Drag.YAxis
                     drag.maximumY: {
@@ -229,15 +230,29 @@ Rectangle {
 
                     onPressed: {
                         clickPos = Qt.point(mouse.x, mouse.y)
+                        var currentDate = new Date()
+                        dateT = currentDate.getTime()
                     }
 
                     onReleased: {
                         item.pressAndHold = false
                         var delta = windowThumbnail.y + (mouse.y - clickPos.y)
-                        if (delta < -(view.cellHeight * 0.25))
-                            windowThumbnail.goCloseAnimation()
-                        else
+                        var currentDateE = new Date()
+                        var t = currentDateE.getTime()
+                        if ((t - dateT) < 200) {
+                            if ((view.count >= 3) && delta < (view.cellHeight * 0.08))
+                                windowThumbnail.goCloseAnimation()
+                            else if (view.count === 2 && delta < (view.cellHeight * 0.4))
+                                windowThumbnail.goCloseAnimation()
+                            else if (view.count === 1 && delta < (view.cellHeight * 0.105))
+                                windowThumbnail.goCloseAnimation()
+                            else
+                                windowThumbnail.goBackAnimation()
+
+                        }
+                        else {
                             windowThumbnail.goBackAnimation()
+                        }
                     }
 
                     onPressAndHold: {
