@@ -242,16 +242,27 @@ Rectangle {
                         if ((t - dateT) < 200) {
                             if ((view.count >= 3) && delta < (view.cellHeight * 0.08))
                                 windowThumbnail.goCloseAnimation()
-                            else if (view.count === 2 && delta < (view.cellHeight * 0.4))
+                            else if (view.count === 2 && delta < (view.cellHeight * 0.42))
                                 windowThumbnail.goCloseAnimation()
-                            else if (view.count === 1 && delta < (view.cellHeight * 0.105))
+                            else if (view.count === 1 && delta < (view.cellHeight * 0.11))
                                 windowThumbnail.goCloseAnimation()
                             else
                                 windowThumbnail.goBackAnimation()
 
                         }
                         else {
-                            windowThumbnail.goBackAnimation()
+                            if (view.count >= 3 || view.count === 1) {
+                                if (delta < -(view.cellHeight * 0.25))
+                                    windowThumbnail.goCloseAnimation()
+                                else
+                                    windowThumbnail.goBackAnimation()
+                            }
+                            else {
+                                if (delta < -(view.cellHeight * 0.07))
+                                    windowThumbnail.goCloseAnimation()
+                                else
+                                    windowThumbnail.goBackAnimation()
+                            }
                         }
                     }
 
