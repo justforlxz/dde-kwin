@@ -1,3 +1,13 @@
+dde-kwin (5.4.24-1) unstable; urgency=medium
+
+  * Feat:
+    + 99784 feat: add watermark feature and support super+s
+  
+  * Bug fix:
+    + fix: Revert "feat: add func about maxi button long press"
+
+ -- xyr <xuyongrui@uniontech.com>  Fri, 11 Feb 2022 19:23:35 +0800
+
 dde-kwin (5.4.22-1) unstable; urgency=medium
 
   * Feat:
