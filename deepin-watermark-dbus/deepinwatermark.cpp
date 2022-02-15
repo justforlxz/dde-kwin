@@ -30,6 +30,8 @@ const QString WATERMARK_CONFIG = QStandardPaths::writableLocation(QStandardPaths
 DeepinWatermark::DeepinWatermark(QWidget *parent) :
     QWidget(parent)
 {
+    // 判断当前平台是x11还是wayland
+    executeLinuxCmd("loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type");
     setGeometry(0, 0, qApp->desktop()->width(), qApp->desktop()->height());//设置水印覆盖整个整个屏幕
     QDBusInterface watermarkInterface("org.kde.KWin", "/Compositor", "org.kde.kwin.Compositing");
     m_bCompositorActive = watermarkInterface.property("active").toBool();
@@ -43,10 +45,10 @@ DeepinWatermark::DeepinWatermark(QWidget *parent) :
     setAttribute(Qt::WA_TranslucentBackground, true);
     setWindowState(Qt::WindowNoState | Qt::WindowFullScreen);
     setFocusPolicy(Qt::NoFocus);
-    //设置鼠标穿透
-#ifdef X11SERVER
-    Utils::passInputEvent(winId());
-#endif
+    // x11设置鼠标穿透
+    if (m_bIsX11Server) {
+        Utils::passInputEvent(winId());
+    }
     m_pPainter = new QPainter(this);
     // 监听kwin切换2D和3D的信号
     QDBusConnection::sessionBus().connect("org.kde.KWin", "/Compositor", "org.kde.kwin.Compositing", "compositingToggled",
@@ -79,10 +81,11 @@ void DeepinWatermark::executeLinuxCmd(const QString &strCmd)
     p.start("bash", QStringList() <<"-c" << strCmd);
     p.waitForFinished();
     QString result = p.readAllStandardOutput();
-    if (result.replace("\n", "") == "true") {
-        m_bCompositorActive = true;
+    qCDebug(WATERMARK_LOG) << "the current display server is : " << result;
+    if (result.replace("\n", "").contains("Type=x11")) {
+        m_bIsX11Server = true;
     } else {
-        m_bCompositorActive = false;
+        m_bIsX11Server = false;
     }
 }
 
@@ -503,13 +506,13 @@ void DeepinWatermark::paintEvent(QPaintEvent *event)
         }
     }
     m_pPainter->end();
-#ifndef X11SERVER
-   setMask(QRegion(0,0,1,1));
-#else
-    if (!m_bCompositorActive) {
-        setMask(pixmap.mask());
+    if (!m_bIsX11Server) {
+        setMask(QRegion(0,0,1,1));
+    } else {
+        if (!m_bCompositorActive) {
+            setMask(pixmap.mask());
+        }
     }
-#endif
     m_pPainter->begin(this);
     int pixmapX = 0;
     int pixmapY = 0;

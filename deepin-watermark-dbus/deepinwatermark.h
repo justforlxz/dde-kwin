@@ -34,6 +34,7 @@ private:
     int calculateCoordinate(const int &index, const int &h_space, const int &hSpace);
 
 private:
+    bool m_bIsX11Server{false};
     bool m_bWatermarkStatus{false};
     QTimer *m_pCurrentTime{nullptr};
     QPainter *m_pPainter{nullptr};

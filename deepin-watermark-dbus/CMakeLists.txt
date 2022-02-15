@@ -20,20 +20,6 @@ set(CMAKE_AUTOMOC ON) # Meta-Object Compiler
 set(CMAKE_AUTORCC ON) # Resource Compiler
 set(CMAKE_AUTOUIC ON) # User Interface Compiler
 
-# 通过执行脚本判断是x11还是wayland
-execute_process(COMMAND sh displayServer.sh
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE display_server)
-string(REPLACE "\n" "" display_server "${display_server}")
-if (${display_server} MATCHES "Type=x11")
-    add_definitions(-DX11SERVER)
-    option(X11SERVER "X11 server support" ON)
-    set(display_server_x11 TRUE)
-else()
-    set(display_server_x11 FALSE)
-endif()
-message("== current display server : ${display_server} ${display_server_x11}")
-
 # 寻找Qt的库
 # Qt5 COMPONENTS Widgets：寻找Qt库中的Widget模块
 # REQUIRED： 意味着找不到报错并不会继续下去
@@ -60,6 +46,13 @@ set(LIBS
 # 1. 将<input>文件里面的内容全部复制到<output>文件中
 # 2. 根据参数规则,替换@VAR@或${VAR}变量
 configure_file(com.deepin.watermark.service.in com.deepin.watermark.service)
+
+install(
+    FILES
+    deepin-watermark-dbus.desktop
+    DESTINATION
+    "/etc/xdg/autostart"
+)
 
 install_files(
     "/share/dbus-1/services"
