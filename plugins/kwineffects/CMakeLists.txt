@@ -1,4 +1,5 @@
 find_package(Qt5 CONFIG REQUIRED COMPONENTS Core Gui)
+find_package(X11 REQUIRED)
 find_package(KF5CoreAddons REQUIRED)
 find_package(KF5WindowSystem REQUIRED)
 
