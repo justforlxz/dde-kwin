@@ -87,7 +87,11 @@ public:
 public Q_SLOTS:
     void slotWindowMove();
     void slotWindowMaximize();
-    bool compositing() const;
+#if !defined(KWIN_VERSION) || KWIN_VERSION < KWIN_VERSION_CHECK(5, 23, 4, 0)
+     // remove by c61085dc2e28cb7d737c9b049499b4433916b194
+     // change to Compositor::compositing()
+     bool compositing() const;
+ #endif
     void slotTouchPadTomoveWindow(int x, int y);
     void slotEndTouchPadToMoveWindow();
 
@@ -139,14 +143,23 @@ class Compositor : public QObject
 public:
     enum SuspendReason { NoReasonSuspend = 0, UserSuspend = 1<<0, BlockRuleSuspend = 1<<1, ScriptSuspend = 1<<2, AllReasonSuspend = 0xff };
     static Compositor *s_compositor;
+    bool isActive();
 };
 
 // 光标管理
+#if defined(KWIN_VERSION) && KWIN_VERSION >= KWIN_VERSION_CHECK(5, 23, 4, 0)
+class Cursors : public QObject
+{
+public:
+    static Cursors *s_self;
+};
+#else
 class Cursor : public QObject
 {
 public:
     static Cursor *s_self;
 };
+#endif
 
 class AbstractClient : public QObject {};
 class Options {
@@ -619,7 +632,11 @@ QObject *KWinUtils::tabBox()
 
 QObject *KWinUtils::cursor()
 {
+#if defined(KWIN_VERSION) && KWIN_VERSION >= KWIN_VERSION_CHECK(5, 23, 4, 0)
+    return KWin::Cursors::s_self;
+#else
     return KWin::Cursor::s_self;
+#endif
 }
 
 QObject *KWinUtils::virtualDesktop()
@@ -649,8 +666,8 @@ QObjectList KWinUtils::clientList()
         return {};
     }
 
-    QList<KWin::Client*> clients;
-    bool ok = QMetaObject::invokeMethod(jsWorkspaceWrapper, "clientList", Q_RETURN_ARG(QList<KWin::Client*>, clients));
+    QList<KWin::AbstractClient*> clients;
+    bool ok = QMetaObject::invokeMethod(jsWorkspaceWrapper, "clientList", Q_RETURN_ARG(QList<KWin::AbstractClient*>, clients));
 
     if (!ok) {
         return {};
@@ -658,7 +675,7 @@ QObjectList KWinUtils::clientList()
 
     QObjectList list;
 
-    for (KWin::Client *c : clients) {
+    for (KWin::AbstractClient *c : clients) {
         list << c;
     }
 
@@ -1073,12 +1090,19 @@ void KWinUtils::removeWindowPropertyMonitor(quint32 property_atom)
 
 bool KWinUtils::isCompositing()
 {
+  #if defined(KWIN_VERSION) && KWIN_VERSION >= KWIN_VERSION_CHECK(5, 23, 4, 0)
+     if (KWin::Compositor::s_compositor) {
+         return KWin::Compositor::s_compositor->isActive();
+     }
+ #else
     KWin::Workspace *ws = static_cast<KWin::Workspace *>(workspace());
     if (ws) {
         return ws->compositing();
     } else {
         return compositorIsActive();
     }
+#endif
+    return compositorIsActive();
 }
 
 bool KWinUtils::buildNativeSettings(QObject *baseObject, quint32 windowID)

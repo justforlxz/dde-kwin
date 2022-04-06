@@ -279,9 +279,11 @@ void RuleBook::save()
 
 namespace BuiltInEffects {
 bool supported(BuiltInEffect effect) {
+#ifdef ENABLE_BUILTIN_BLUR
     if (effect == BuiltInEffect::Blur) {
         return false;
     }
+#endif
 
     typedef bool (*ClientBuiltInEffect)(KWin::BuiltInEffect);
     ClientBuiltInEffect clientBuildInEffect = (ClientBuiltInEffect)QLibrary::resolve("kwin", qApp->applicationVersion(), "_ZN4KWin14BuiltInEffects9supportedENS_13BuiltInEffectE");

@@ -23,6 +23,10 @@
 
 #include <kwineffects.h>
 
+#ifndef DISBLE_DDE_KWIN_XCB
+#include "kwinutils.h"
+#endif
+
 class ScissorWindow : public KWin::Effect
 {
     Q_OBJECT
