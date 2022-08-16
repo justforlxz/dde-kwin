@@ -64,7 +64,9 @@ macro(query_qmake args output)
     endif()
 endmacro()
 
-query_qmake("QT_INSTALL_PLUGINS" QT_INSTALL_PLUGINS)
+if(NOT DEFINED QT_INSTALL_PLUGINS)
+    query_qmake("QT_INSTALL_PLUGINS" QT_INSTALL_PLUGINS)
+endif()
 
 if(NOT DEFINED PLUGIN_INSTALL_PATH)
     set(PLUGIN_INSTALL_PATH ${QT_INSTALL_PLUGINS}/platforms)
