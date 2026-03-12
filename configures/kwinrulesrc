@@ -1,29 +1,29 @@
 [1]
 Description=dde-dock
-desktop=-1
+desktops=-1
 desktopsrule=2
-wmclass=dde-dock dde-dock
+wmclass=dde-shell/dock org.deepin.dde-shell
 wmclasscomplete=true
 wmclassmatch=1
 noborder=true
 noborderrule=2
 
 [2]
-Description=dde-dock-popup
-types=65536
-placement=0
-placementrule=2
-wmclass=dde-dock dde-dock
-wmclasscomplete=true
-wmclassmatch=1
-
-[3]
-Description=dde-launcher
+Description=dde-launcher-smallscreen
 strictgeometry=false
 strictgeometryrule=2
 hidewindowmenu=true
 hidewindowmenurule=2
-wmclass=dde-launcher dde-launcher
+title=dde-shell/panelpopup
+titlematch=1
+
+[3]
+Description=dde-launcher-fullscreen
+strictgeometry=false
+strictgeometryrule=2
+hidewindowmenu=true
+hidewindowmenurule=2
+wmclass=dde-shell/launchpad org.deepin.dde-shell
 wmclasscomplete=true
 wmclassmatch=1
 
@@ -100,14 +100,7 @@ wmclass=callpu
 wmclasscomplete=false
 wmclassmatch=1
 
-[12]
-Description=dde-shell
-desktops=-1
-desktopsrule=2
-wmclass=dde-shell org.deepin.dde-shell
-wmclasscomplete=true
-wmclassmatch=1
-
 [General]
 count=11
-rules=1,2,3,4,5,6,7,8,9,10,11,12
+rules=1,2,3,4,5,6,7,8,9,10,11
+
