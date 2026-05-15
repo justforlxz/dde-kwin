@@ -19,6 +19,8 @@ titlematch=1
 
 [3]
 Description=dde-launcher-fullscreen
+usefullscreenarea=true
+usefullscreenarearule=2
 strictgeometry=false
 strictgeometryrule=2
 hidewindowmenu=true
